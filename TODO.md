@@ -1,0 +1,15 @@
+
+- Char: Character design:
+  - Gather references
+  - bee
+  - flowers
+  - carnivourous flowers
+  - power up flowers
+  - spider
+  - bird
+- Char: Level concept art
+  - Gather references
+- Dad: Prototype engine with a basic bee
+- Aud: Look for sound effects
+  - Look for sound tools
+- Aud: Gather prelim music
