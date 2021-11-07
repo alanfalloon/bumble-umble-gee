@@ -378,11 +378,24 @@ dependencies = [
  "bit-set",
  "downcast-rs",
  "itertools",
+ "legion_codegen",
  "parking_lot",
  "paste",
  "smallvec 1.7.0",
  "thiserror",
  "uuid",
+]
+
+[[package]]
+name = "legion_codegen"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ad5ad7a361d7b2522010335d95fa73135cb3c6816bef22cc7a5d5861587ae1b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+ "thiserror",
 ]
 
 [[package]]

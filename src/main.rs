@@ -1,15 +1,19 @@
-// #[global_allocator]
-// static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
 use macroquad::prelude::*;
+
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
+mod backstage;
+mod bee;
+mod camera;
+mod meadow;
+mod prelude;
+
 #[macroquad::main("BumbleUmbleGee")]
 async fn main() {
-    // #[cfg(target_arch = "wasm32")]
-    // std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+    let mut stage_manager = backstage::StageManager::new();
     loop {
-        clear_background(LIGHTGRAY);
-        let middle = (screen_width() / 2., screen_height() / 2.);
-        draw_circle(middle.0, middle.1, 60., BLACK);
+        stage_manager.tick();
         next_frame().await
     }
 }
