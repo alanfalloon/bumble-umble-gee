@@ -19,26 +19,40 @@ struct Flower {
 
 pub fn roll_call(world: &mut legion::world::World, systems: &mut legion::systems::Builder) {
     world.push((Meadow {},));
-    let max = Position::far_corner().position;
+    let max = Position::far_corner().0;
     for _ in 0..100 {
-        let pos = Vec::new(gen_range(0., max.x), gen_range(0., max.y));
-        let color = Color::new(gen_range(0., 1.), gen_range(0., 1.), gen_range(0., 1.), 1.);
-        let radius = gen_range(15., 35.);
+        let pos = Vec2D::new(gen_range(0., max.x), gen_range(0., max.y));
+        let color = Color::new(
+            gen_range(0.2, 1.),
+            gen_range(0., 0.1),
+            gen_range(0.2, 1.),
+            1.,
+        );
+        let radius = gen_range(15., 25.);
         world.push((Flower { color, radius }, Position::from(pos)));
     }
     systems
-        .add_system(ground_system())
+        .add_system(update_position_system())
+        .add_system(draw_ground_system())
         .flush()
-        .add_system(flower_system())
+        .add_system(draw_flower_system())
         .flush();
 }
 
 #[system(for_each)]
-fn ground(_: &Meadow) {
+fn update_position(pos: &mut Position, vel: &Velocity, #[resource] tick: &Duration) {
+    let Position(p) = *pos;
+    let Velocity(v) = *vel;
+    *pos = Position::from(p + v * tick.as_secs_f32())
+}
+
+#[system(for_each)]
+fn draw_ground(_: &Meadow) {
     clear_background(Color::new(0.58, 0.78, 0.58, 1.00));
 }
 
 #[system(for_each)]
-fn flower(flower: &Flower, pos: &Position) {
-    draw_circle(pos.position.x, pos.position.y, flower.radius, flower.color);
+fn draw_flower(flower: &Flower, pos: &Position) {
+    let Position(pos) = pos;
+    draw_circle(pos.x, pos.y, flower.radius, flower.color);
 }

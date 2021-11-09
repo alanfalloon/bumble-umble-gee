@@ -20,6 +20,7 @@ pub struct StageManager {
     world: World,
     schedule: Schedule,
     resources: Resources,
+    clock: GameTime,
 }
 
 impl StageManager {
@@ -29,9 +30,31 @@ impl StageManager {
             world,
             schedule,
             resources: Resources::default(),
+            clock: GameTime::new(),
         }
     }
     pub fn tick(&mut self) {
+        self.resources.insert(self.clock.tick());
+        self.resources.insert(Inputs::grab());
         self.schedule.execute(&mut self.world, &mut self.resources)
+    }
+}
+struct GameTime {
+    time: f64,
+    tick: Duration,
+}
+impl GameTime {
+    fn new() -> Self {
+        GameTime {
+            time: get_time(),
+            tick: Duration::default(),
+        }
+    }
+    fn tick(&mut self) -> Duration {
+        let time = get_time();
+        let tick = Duration::from_secs_f64(time - self.time);
+        self.time = time;
+        self.tick = tick;
+        tick
     }
 }
