@@ -61,6 +61,18 @@ fn fly(bee: &Bee, vel: &mut Velocity, #[resource] tick: &Duration) {
 }
 
 #[system(for_each)]
-fn draw(_: &mut Bee, pos: &Position) {
-    draw_circle(pos.0.x, pos.0.y, 6., BLACK);
+fn draw(bee: &Bee, pos: &Position) {
+    let Position(pos) = *pos;
+    let heading = bee.thrust.normalize();
+    let starboard = Vec2D::new(-heading.y, heading.x);
+    let head_pos = pos + heading * 6.;
+    let sting_pos = pos - heading * 8.;
+    let right_wing_pos = pos + starboard * 7.;
+    let left_wing_pos = pos - starboard * 7.;
+    let wing_color = Color { a: 0.6, ..SKYBLUE };
+    draw_line(pos.x, pos.y, sting_pos.x, sting_pos.y, 2., BLACK);
+    draw_circle(pos.x, pos.y, 6., YELLOW);
+    draw_circle(head_pos.x, head_pos.y, 3., BLACK);
+    draw_circle(right_wing_pos.x, right_wing_pos.y, 5., wing_color);
+    draw_circle(left_wing_pos.x, left_wing_pos.y, 5., wing_color);
 }
