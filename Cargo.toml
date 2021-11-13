@@ -7,8 +7,7 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cgmath = "0.18.0"
-console_error_panic_hook = "0.1.7"
+egui-macroquad = "0.7.0"
 euclid = "0.22.6"
 glam = "0.20.0"
 legion = { version = "0.4.0", features = [
@@ -16,8 +15,6 @@ legion = { version = "0.4.0", features = [
     "codegen",
 ], default-features = false }
 macroquad = "0.3.10"
-nalgebra = "0.29.0"
-sycamore = "0.6.3"
 wee_alloc = "0.4.5"
 wfc = { version = "0.10.4", features = ["js"] }
 

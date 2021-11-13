@@ -23,7 +23,7 @@ pub fn roll_call(world: &mut legion::world::World, systems: &mut legion::systems
             destination: middle.0 / 2.,
             thrust: Vec2D::default(),
             mass: 1.,
-            max_thrust: 10.,
+            max_thrust: 100.,
         },
         middle,
         Velocity::default(),
@@ -56,7 +56,7 @@ fn head_for_destination(bee: &mut Bee, pos: &Position) {
 fn fly(bee: &Bee, vel: &mut Velocity, #[resource] tick: &Duration) {
     let Velocity(v) = *vel;
     // Add in a bit of drag
-    let thrust = bee.thrust + (v * -0.1);
+    let thrust = bee.thrust + (v * -0.5);
     *vel = Velocity::from(v + thrust * bee.mass * tick.as_secs_f32());
 }
 
