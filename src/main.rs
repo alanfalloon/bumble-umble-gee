@@ -8,6 +8,7 @@ mod bee;
 mod camera;
 mod meadow;
 mod prelude;
+mod spritesheet;
 
 #[macroquad::main("BumbleUmbleGee")]
 async fn main() {

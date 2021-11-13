@@ -3,17 +3,18 @@
 //! Follow the users touch! Mine the flowers! Do your best little bee! We are
 //! rooting for you!
 
-use crate::prelude::*;
+use crate::{prelude::*, spritesheet};
 use legion::system;
 use macroquad::prelude::*;
 
 /// The bees stats
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct Bee {
-    destination: Vec2D,
-    thrust: Vec2D,
+    destination: Vec2,
+    thrust: Vec2,
     mass: f32,
     max_thrust: f32,
+    texture: Texture2D,
 }
 
 pub fn roll_call(world: &mut legion::world::World, systems: &mut legion::systems::Builder) {
@@ -21,9 +22,13 @@ pub fn roll_call(world: &mut legion::world::World, systems: &mut legion::systems
     world.push((
         Bee {
             destination: middle.0 / 2.,
-            thrust: Vec2D::default(),
+            thrust: Vec2::default(),
             mass: 1.,
             max_thrust: 100.,
+            texture: Texture2D::from_file_with_format(
+                crate::spritesheet::SPRITESHEET_PNG_BYTES,
+                Some(ImageFormat::Png),
+            ),
         },
         middle,
         Velocity::default(),
@@ -62,17 +67,52 @@ fn fly(bee: &Bee, vel: &mut Velocity, #[resource] tick: &Duration) {
 
 #[system(for_each)]
 fn draw(bee: &Bee, pos: &Position) {
+    let frame_rect = &spritesheet::BEE_FLYING_FRAMES[0];
+    let frame_corner: Vec2 = UVec2::from(spritesheet::BEE_FLYING_FRAME_SIZE).as_f32() * 0.2;
+    // Vertices and triangles:
+    //  0 - 1
+    //  | / |
+    //  2 - 3
+    let v1 = frame_corner;
+    let v0 = Vec2::new(-v1.x, v1.y);
+    let v2 = -v1;
+    let v3 = -v0;
+    let indices = vec![0, 1, 2, 1, 2, 3];
     let Position(pos) = *pos;
     let heading = bee.thrust.normalize();
-    let starboard = Vec2D::new(-heading.y, heading.x);
-    let head_pos = pos + heading * 6.;
-    let sting_pos = pos - heading * 8.;
-    let right_wing_pos = pos + starboard * 7.;
-    let left_wing_pos = pos - starboard * 7.;
-    let wing_color = Color { a: 0.6, ..SKYBLUE };
-    draw_line(pos.x, pos.y, sting_pos.x, sting_pos.y, 2., BLACK);
-    draw_circle(pos.x, pos.y, 6., YELLOW);
-    draw_circle(head_pos.x, head_pos.y, 3., BLACK);
-    draw_circle(right_wing_pos.x, right_wing_pos.y, 5., wing_color);
-    draw_circle(left_wing_pos.x, left_wing_pos.y, 5., wing_color);
+    // Rotation matrix is:
+    // | cos t; -sin t |
+    // | sin t;  cos t |
+    // Since `heading` is a unit rotation, then `cos t == heading.x`
+    // and `sin t == heading.y`. I drew a picture in Notes.key.
+    let rot = Mat2::from_cols_array_2d(&[[heading.x, heading.y], [-heading.y, heading.x]]);
+    // UV space.
+    let uv = Vec2::from(frame_rect.uv);
+    let delta_uv = Vec2::from(spritesheet::BEE_FLYING_FRAME_UV);
+    draw_mesh(&Mesh {
+        vertices: vec![
+            macroquad::models::Vertex {
+                position: (rot * v0 + pos).extend(0.),
+                uv: uv,
+                color: WHITE,
+            },
+            macroquad::models::Vertex {
+                position: (rot * v1 + pos).extend(0.),
+                uv: uv + (delta_uv.x, 0.).into(),
+                color: WHITE,
+            },
+            macroquad::models::Vertex {
+                position: (rot * v2 + pos).extend(0.),
+                uv: uv + (0., delta_uv.y).into(),
+                color: WHITE,
+            },
+            macroquad::models::Vertex {
+                position: (rot * v3 + pos).extend(0.),
+                uv: uv + delta_uv,
+                color: WHITE,
+            },
+        ],
+        indices,
+        texture: Some(bee.texture),
+    });
 }

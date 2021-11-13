@@ -21,7 +21,7 @@ pub fn roll_call(world: &mut legion::world::World, systems: &mut legion::systems
     world.push((Meadow {},));
     let max = Position::far_corner().0;
     for _ in 0..100 {
-        let pos = Vec2D::new(gen_range(0., max.x), gen_range(0., max.y));
+        let pos = Vec2::new(gen_range(0., max.x), gen_range(0., max.y));
         let color = Color::new(
             gen_range(0.2, 1.),
             gen_range(0., 0.1),

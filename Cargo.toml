@@ -8,7 +8,6 @@ publish = false
 
 [dependencies]
 egui-macroquad = "0.7.0"
-euclid = "0.22.6"
 glam = "0.20.0"
 legion = { version = "0.4.0", features = [
     "wasm-bindgen",
@@ -29,3 +28,11 @@ codegen-units = 1
 opt-level = 's' # or 'z' to optimize "aggressively" for size
 # Enable link time optimization.
 lto = true
+
+[dev-dependencies]
+convert_case = "0.4.0"
+
+[dev-dependencies.image]
+version = "0.23.14"
+default-features = false
+features = ["png"]

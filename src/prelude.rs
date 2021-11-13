@@ -3,15 +3,12 @@ pub use legion::{system, systems::Builder, Resources, Schedule, World};
 pub use macroquad::prelude::*;
 pub use std::time::Duration;
 
-pub struct WorldSpace;
-pub type Vec2D = euclid::Vector2D<f32, WorldSpace>;
-
 /// A location
 #[derive(Clone, Copy, Debug, PartialEq, Default)]
-pub struct Position(pub Vec2D);
+pub struct Position(pub Vec2);
 impl Position {
     pub fn new(x: f32, y: f32) -> Position {
-        Position(Vec2D::new(x, y))
+        Position(Vec2::new(x, y))
     }
     pub fn middle() -> Position {
         Position::from(Self::far_corner().0 / 2.)
@@ -20,30 +17,30 @@ impl Position {
         Self::new(screen_width(), screen_height())
     }
 }
-impl From<Vec2D> for Position {
-    fn from(position: Vec2D) -> Self {
+impl From<Vec2> for Position {
+    fn from(position: Vec2) -> Self {
         Position(position)
     }
 }
 
 // A velocity
 #[derive(Clone, Copy, Debug, PartialEq, Default)]
-pub struct Velocity(pub Vec2D);
-impl From<Vec2D> for Velocity {
-    fn from(velocity: Vec2D) -> Self {
+pub struct Velocity(pub Vec2);
+impl From<Vec2> for Velocity {
+    fn from(velocity: Vec2) -> Self {
         Velocity(velocity)
     }
 }
 
 // Inputs. Loaded as a resource
 pub struct Inputs {
-    pub mouse_click: Option<Vec2D>,
+    pub mouse_click: Option<Vec2>,
 }
 impl Inputs {
     pub fn grab() -> Self {
         let mouse_click = if is_mouse_button_pressed(MouseButton::Left) {
             let (x, y) = mouse_position();
-            Some(Vec2D::new(x, y))
+            Some(Vec2::new(x, y))
         } else {
             None
         };
