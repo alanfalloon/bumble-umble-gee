@@ -7,6 +7,7 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+array-init = "2.0.0"
 egui-macroquad = "0.7.0"
 glam = "0.20.0"
 legion = { version = "0.4.0", features = [

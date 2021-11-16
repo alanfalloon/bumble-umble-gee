@@ -67,51 +67,66 @@ fn fly(bee: &Bee, vel: &mut Velocity, #[resource] tick: &Duration) {
 
 #[system(for_each)]
 fn draw(bee: &Bee, pos: &Position) {
-    let frame_rect = &spritesheet::BEE_FLYING_FRAMES[0];
-    let frame_corner: Vec2 = UVec2::from(spritesheet::BEE_FLYING_FRAME_SIZE).as_f32() * 0.2;
-    // Vertices and triangles:
-    //  0 - 1
-    //  | / |
-    //  2 - 3
-    let v1 = frame_corner;
-    let v0 = Vec2::new(-v1.x, v1.y);
-    let v2 = -v1;
-    let v3 = -v0;
-    let indices = vec![0, 1, 2, 1, 2, 3];
+    // Texture coordinates s*
+    let Rect {
+        x: sx,
+        y: sy,
+        w: sw,
+        h: sh,
+    } = spritesheet::BEE_FLYING_FRAMES[0].xy;
+    // Scale the texture
+    let (w, h) = (Vec2::new(sw, sh) * 0.2).into();
+    // Find the midpoint for the rotation
     let Position(pos) = *pos;
-    let heading = bee.thrust.normalize();
+    let (x, y) = pos.into();
+    let midpoint = Vec2::new(x + w / 2., y + h / 2.);
+    let points = [
+        vec2(x, y) - midpoint,
+        vec2(x + w, y) - midpoint,
+        vec2(x + w, y + h) - midpoint,
+        vec2(x, y + h) - midpoint,
+    ];
+    let texture_uv: [Vec2; 4] = {
+        let tx = bee.texture.width();
+        let ty = bee.texture.height();
+        [
+            vec2(sx / tx, sy / ty),
+            vec2((sx + sw) / tx, sy / ty),
+            vec2((sx + sw) / tx, (sy + sh) / ty),
+            vec2(sx / tx, (sy + sh) / ty),
+        ]
+    };
     // Rotation matrix is:
     // | cos t; -sin t |
     // | sin t;  cos t |
-    // Since `heading` is a unit rotation, then `cos t == heading.x`
-    // and `sin t == heading.y`. I drew a picture in Notes.key.
-    let rot = Mat2::from_cols_array_2d(&[[heading.x, heading.y], [-heading.y, heading.x]]);
-    // UV space.
-    let uv = Vec2::from(frame_rect.uv);
-    let delta_uv = Vec2::from(spritesheet::BEE_FLYING_FRAME_UV);
+
+    // Since `heading` is a unit rotation, then normally `cos t == heading.x`
+    // and `sin t == heading.y`, *but* since these sprites treat "up" as
+    // "forward" we need to adjust by rotating 90deg, so now `cos t ==
+    // heading.y` and `sin t == -heading.x`. I drew a picture in Notes.key.
+    let heading = bee.thrust.normalize();
+    // |  heading.y; heading.x |
+    // | -heading.x; heading.y |
+    let rot = Mat2::from_cols_array_2d(&[[heading.y, -heading.x], [heading.x, heading.y]]);
+    let points: [_; 4] = array_init::array_init(|n| rot * points[n] + midpoint);
+    // Vertices and triangles:
+    //  0 - 1
+    //  | \ |
+    //  3 - 2
+    let indices = vec![0, 1, 2, 0, 2, 3];
+    let vertices: Vec<_> = {
+        use macroquad::models::Vertex;
+        (0..4)
+            .into_iter()
+            .map(|n| Vertex {
+                position: points[n].extend(0.),
+                uv: texture_uv[n],
+                color: WHITE,
+            })
+            .collect()
+    };
     draw_mesh(&Mesh {
-        vertices: vec![
-            macroquad::models::Vertex {
-                position: (rot * v0 + pos).extend(0.),
-                uv: uv,
-                color: WHITE,
-            },
-            macroquad::models::Vertex {
-                position: (rot * v1 + pos).extend(0.),
-                uv: uv + (delta_uv.x, 0.).into(),
-                color: WHITE,
-            },
-            macroquad::models::Vertex {
-                position: (rot * v2 + pos).extend(0.),
-                uv: uv + (0., delta_uv.y).into(),
-                color: WHITE,
-            },
-            macroquad::models::Vertex {
-                position: (rot * v3 + pos).extend(0.),
-                uv: uv + delta_uv,
-                color: WHITE,
-            },
-        ],
+        vertices,
         indices,
         texture: Some(bee.texture),
     });
