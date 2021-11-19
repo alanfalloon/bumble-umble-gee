@@ -60,8 +60,9 @@ fn head_for_destination(bee: &mut Bee, pos: &Position) {
 #[system(for_each)]
 fn fly(bee: &Bee, vel: &mut Velocity, #[resource] tick: &Duration) {
     let Velocity(v) = *vel;
-    // Add in a bit of drag
-    let thrust = bee.thrust + (v * -0.5);
+    // Add in a bit of drag, with a bit of random walk thrown in
+    let wind = -v;
+    let thrust = bee.thrust + wind * 0.7;
     *vel = Velocity::from(v + thrust * bee.mass * tick.as_secs_f32());
 }
 
@@ -130,4 +131,16 @@ fn draw(bee: &Bee, pos: &Position) {
         indices,
         texture: Some(bee.texture),
     });
+    for (fr, to) in [(0, 1), (1, 2), (2, 3), (3, 0)] {
+        draw_line(
+            points[fr].x,
+            points[fr].y,
+            points[to].x,
+            points[to].y,
+            1.,
+            RED,
+        );
+    }
+    draw_circle_lines(x, y, 3., 1., BLUE);
+    draw_circle_lines(bee.destination.x, bee.destination.y, 2., 1., GREEN);
 }
