@@ -76,17 +76,21 @@ fn draw(bee: &Bee, pos: &Position) {
         h: sh,
     } = spritesheet::BEE_FLYING_FRAMES[0].xy;
     // Scale the texture
-    let (w, h) = (Vec2::new(sw, sh) * 0.2).into();
+    let (w, h) = (vec2(sw, sh) * 0.2).into();
     // Find the midpoint for the rotation
     let Position(pos) = *pos;
     let (x, y) = pos.into();
-    let midpoint = Vec2::new(x + w / 2., y + h / 2.);
-    let points = [
-        vec2(x, y) - midpoint,
-        vec2(x + w, y) - midpoint,
-        vec2(x + w, y + h) - midpoint,
-        vec2(x, y + h) - midpoint,
-    ];
+    let points = {
+        // half-width and half-height
+        let hw = -w / 2.;
+        let hh = -h / 2.;
+        [
+            vec2(x - hw, y - hh) - pos,
+            vec2(x + hw, y - hh) - pos,
+            vec2(x + hw, y + hh) - pos,
+            vec2(x - hw, y + hh) - pos,
+        ]
+    };
     let texture_uv: [Vec2; 4] = {
         let tx = bee.texture.width();
         let ty = bee.texture.height();
@@ -109,7 +113,7 @@ fn draw(bee: &Bee, pos: &Position) {
     // | heading.x; -heading.y |
     // | heading.y;  heading.x |
     let rot = Mat2::from_cols_array_2d(&[[heading.x, heading.y], [-heading.y, heading.x]]);
-    let points: [_; 4] = array_init::array_init(|n| rot * points[n] + midpoint);
+    let points: [_; 4] = array_init::array_init(|n| rot * points[n] + pos);
     // Vertices and triangles:
     //  0 - 1
     //  | \ |
@@ -142,5 +146,8 @@ fn draw(bee: &Bee, pos: &Position) {
         );
     }
     draw_circle_lines(x, y, 3., 1., BLUE);
+    draw_line(x, y, x + heading.x, y + heading.y, 1., BLUE);
+    let heading = bee.thrust.normalize();
+    draw_line(x, y, x + heading.x, y + heading.y, 1., GREEN);
     draw_circle_lines(bee.destination.x, bee.destination.y, 2., 1., GREEN);
 }
