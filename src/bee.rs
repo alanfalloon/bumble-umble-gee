@@ -102,12 +102,12 @@ fn draw(bee: &Bee, pos: &Position) {
 
     // Since `heading` is a unit rotation, then normally `cos t == heading.x`
     // and `sin t == heading.y`, *but* since these sprites treat "up" as
-    // "forward" we need to adjust by rotating 90deg, so now `cos t ==
-    // heading.y` and `sin t == -heading.x`. I drew a picture in Notes.key.
-    let heading = bee.thrust.normalize();
-    // |  heading.y; heading.x |
-    // | -heading.x; heading.y |
-    let rot = Mat2::from_cols_array_2d(&[[heading.y, -heading.x], [heading.x, heading.y]]);
+    // "forward" we need to adjust by rotating 90deg. I drew a picture in
+    // Notes.key.
+    let heading = bee.thrust.normalize().perp();
+    // | heading.x; -heading.y |
+    // | heading.y;  heading.x |
+    let rot = Mat2::from_cols_array_2d(&[[heading.x, heading.y], [-heading.y, heading.x]]);
     let points: [_; 4] = array_init::array_init(|n| rot * points[n] + midpoint);
     // Vertices and triangles:
     //  0 - 1
