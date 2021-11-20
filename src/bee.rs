@@ -82,8 +82,8 @@ fn draw(bee: &Bee, pos: &Position) {
     let (x, y) = pos.into();
     let points = {
         // half-width and half-height
-        let hw = -w / 2.;
-        let hh = -h / 2.;
+        let hw = w / 2.;
+        let hh = h / 2.;
         [
             vec2(x - hw, y - hh) - pos,
             vec2(x + hw, y - hh) - pos,
@@ -146,8 +146,9 @@ fn draw(bee: &Bee, pos: &Position) {
         );
     }
     draw_circle_lines(x, y, 3., 1., BLUE);
+    let heading = heading * 10.;
     draw_line(x, y, x + heading.x, y + heading.y, 1., BLUE);
-    let heading = bee.thrust.normalize();
+    let heading = bee.thrust.normalize() * 10.;
     draw_line(x, y, x + heading.x, y + heading.y, 1., GREEN);
     draw_circle_lines(bee.destination.x, bee.destination.y, 2., 1., GREEN);
 }
