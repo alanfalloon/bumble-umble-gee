@@ -47,3 +47,8 @@ impl Inputs {
         Self { mouse_click }
     }
 }
+// Clock. Loaded as a resource
+pub struct GameClock {
+    pub time: f64,
+    pub tick: Duration,
+}

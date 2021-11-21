@@ -9,7 +9,10 @@ use crate::prelude::*;
 /// The meadow
 #[derive(Clone, Copy, Debug, PartialEq)]
 
-struct Meadow {}
+struct Meadow {
+    h: usize,
+    w: usize,
+}
 /// A flower
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct Flower {
@@ -17,11 +20,14 @@ struct Flower {
     radius: f32,
 }
 
-pub fn roll_call(world: &mut legion::world::World, systems: &mut legion::systems::Builder) {
-    world.push((Meadow {},));
-    let max = Position::far_corner().0;
+pub fn roll_call(
+    world: &mut legion::world::World,
+    systems: &mut legion::systems::Builder,
+    resources: &mut legion::systems::Resources,
+) {
+    world.push((Meadow { h: 1_000, w: 1_000 },));
     for _ in 0..100 {
-        let pos = Vec2::new(gen_range(0., max.x), gen_range(0., max.y));
+        let pos = Vec2::new(gen_range(0., 1_000.), gen_range(0., 1_000.));
         let color = Color::new(
             gen_range(0.2, 1.),
             gen_range(0., 0.1),
@@ -40,10 +46,10 @@ pub fn roll_call(world: &mut legion::world::World, systems: &mut legion::systems
 }
 
 #[system(for_each)]
-fn update_position(pos: &mut Position, vel: &Velocity, #[resource] tick: &Duration) {
+fn update_position(pos: &mut Position, vel: &Velocity, #[resource] clock: &GameClock) {
     let Position(p) = *pos;
     let Velocity(v) = *vel;
-    *pos = Position::from(p + v * tick.as_secs_f32())
+    *pos = Position::from(p + v * clock.tick.as_secs_f32())
 }
 
 #[system(for_each)]

@@ -3,58 +3,58 @@
 //! Keeping track of everyone. Lets make sure everyone gets thier cues.
 
 use crate::prelude::*;
-use legion::{Resources, Schedule, World};
-
-/// Gather everyone before the show.
-fn roll_call() -> (World, Schedule) {
-    let mut world = World::default();
-    let mut builder = Schedule::builder();
-    // In Z-order so drawing happens correctly
-    crate::meadow::roll_call(&mut world, &mut builder);
-    crate::bee::roll_call(&mut world, &mut builder);
-    crate::camera::roll_call(&mut world, &mut builder);
-    (world, builder.build())
-}
+use legion::{system, Resources, Schedule, World};
 
 pub struct StageManager {
     world: World,
     schedule: Schedule,
     resources: Resources,
-    clock: GameTime,
 }
 
 impl StageManager {
     pub fn new() -> StageManager {
-        let (world, schedule) = roll_call();
+        let mut world = World::default();
+        let mut builder = Schedule::builder();
+        let mut resources = Resources::default();
+        // First, timekeeping. Add the clock and the system to keep it current.
+        resources.insert(GameClock {
+            time: get_time(),
+            tick: Duration::default(),
+        });
+        builder.add_system(tick_system());
+        // Next inputs.
+        resources.insert(Inputs { mouse_click: None });
+        builder.add_system(inputs_system());
+        // In Z-order so drawing happens correctly
+        crate::meadow::roll_call(&mut world, &mut builder, &mut resources);
+        crate::bee::roll_call(&mut world, &mut builder, &mut resources);
+        crate::camera::roll_call(&mut world, &mut builder, &mut resources);
+        let schedule = builder.build();
         StageManager {
             world,
             schedule,
-            resources: Resources::default(),
-            clock: GameTime::new(),
+            resources,
         }
     }
-    pub fn tick(&mut self) {
-        self.resources.insert(self.clock.tick());
-        self.resources.insert(Inputs::grab());
+
+    pub fn execute(&mut self) {
         self.schedule.execute(&mut self.world, &mut self.resources)
     }
 }
-struct GameTime {
-    time: f64,
-    tick: Duration,
+
+#[system]
+fn tick(#[resource] clock: &mut GameClock) {
+    let time = get_time();
+    let tick = Duration::from_secs_f64(time - clock.time);
+    clock.time = time;
+    clock.tick = tick;
 }
-impl GameTime {
-    fn new() -> Self {
-        GameTime {
-            time: get_time(),
-            tick: Duration::default(),
-        }
-    }
-    fn tick(&mut self) -> Duration {
-        let time = get_time();
-        let tick = Duration::from_secs_f64(time - self.time);
-        self.time = time;
-        self.tick = tick;
-        tick
-    }
+
+#[system]
+fn inputs(#[resource] inputs: &mut Inputs) {
+    inputs.mouse_click = if is_mouse_button_pressed(MouseButton::Left) {
+        Some(mouse_position().into())
+    } else {
+        None
+    };
 }

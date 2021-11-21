@@ -4,12 +4,12 @@
 //! rooting for you!
 
 use crate::{prelude::*, spritesheet};
-use legion::system;
+use legion::{system, Entity};
 use macroquad::prelude::*;
 
 /// The bees stats
 #[derive(Clone, Copy, Debug, PartialEq)]
-struct Bee {
+pub struct Bee {
     destination: Vec2,
     thrust: Vec2,
     mass: f32,
@@ -17,9 +17,13 @@ struct Bee {
     texture: Texture2D,
 }
 
-pub fn roll_call(world: &mut legion::world::World, systems: &mut legion::systems::Builder) {
+pub fn roll_call(
+    world: &mut legion::world::World,
+    systems: &mut legion::systems::Builder,
+    resources: &mut legion::systems::Resources,
+) -> Entity {
     let middle = Position::middle();
-    world.push((
+    let bee_entity = world.push((
         Bee {
             destination: middle.0 / 2.,
             thrust: Vec2::default(),
@@ -37,6 +41,7 @@ pub fn roll_call(world: &mut legion::world::World, systems: &mut legion::systems
     systems.add_system(head_for_destination_system());
     systems.add_system(fly_system());
     systems.add_system(draw_system());
+    bee_entity
 }
 
 #[system(for_each)]
@@ -58,12 +63,12 @@ fn head_for_destination(bee: &mut Bee, pos: &Position) {
 }
 
 #[system(for_each)]
-fn fly(bee: &Bee, vel: &mut Velocity, #[resource] tick: &Duration) {
+fn fly(bee: &Bee, vel: &mut Velocity, #[resource] clock: &GameClock) {
     let Velocity(v) = *vel;
     // Add in a bit of drag, with a bit of random walk thrown in
     let wind = -v;
     let thrust = bee.thrust + wind * 0.7;
-    *vel = Velocity::from(v + thrust * bee.mass * tick.as_secs_f32());
+    *vel = Velocity::from(v + thrust * bee.mass * clock.tick.as_secs_f32());
 }
 
 #[system(for_each)]
