@@ -33,21 +33,12 @@ impl From<Vec2> for Velocity {
 }
 
 // Inputs. Loaded as a resource
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 pub struct Inputs {
     pub mouse_click: Option<Vec2>,
 }
-impl Inputs {
-    pub fn grab() -> Self {
-        let mouse_click = if is_mouse_button_pressed(MouseButton::Left) {
-            let (x, y) = mouse_position();
-            Some(Vec2::new(x, y))
-        } else {
-            None
-        };
-        Self { mouse_click }
-    }
-}
-// Clock. Loaded as a resource
+/// Clock. Loaded as a resource
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 pub struct GameClock {
     pub time: f64,
     pub tick: Duration,

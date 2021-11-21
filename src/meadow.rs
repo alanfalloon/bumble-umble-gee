@@ -23,7 +23,7 @@ struct Flower {
 pub fn roll_call(
     world: &mut legion::world::World,
     systems: &mut legion::systems::Builder,
-    resources: &mut legion::systems::Resources,
+    _resources: &mut legion::systems::Resources,
 ) {
     world.push((Meadow { h: 1_000, w: 1_000 },));
     for _ in 0..100 {

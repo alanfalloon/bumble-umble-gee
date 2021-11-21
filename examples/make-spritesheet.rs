@@ -159,8 +159,8 @@ fn find_all_sprite_frames() -> SpriteFrames {
             println!("Found {} frame {} at {}", &series, &index, path.display());
             let series = frames
                 .entry(series.to_owned())
-                .or_insert_with(|| BTreeMap::new());
-            let _: Option<()> = series.insert(index, path.clone()).and_then(|old_path| {
+                .or_insert_with(BTreeMap::new);
+            let _: Option<()> = series.insert(index, path.clone()).map(|old_path| {
                 panic!(
                     "Index {} found at path {} and path {}",
                     index,

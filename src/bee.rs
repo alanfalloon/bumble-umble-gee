@@ -20,7 +20,7 @@ pub struct Bee {
 pub fn roll_call(
     world: &mut legion::world::World,
     systems: &mut legion::systems::Builder,
-    resources: &mut legion::systems::Resources,
+    _resources: &mut legion::systems::Resources,
 ) -> Entity {
     let middle = Position::middle();
     let bee_entity = world.push((

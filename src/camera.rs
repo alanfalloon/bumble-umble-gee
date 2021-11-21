@@ -3,8 +3,7 @@
 //! Follow the bee, show us what is coming. Help us notice stuff. But be gentle,
 //! remember we are moving the bee with our touch.
 
-use legion::{component, world::SubWorld, Entity, EntityStore, IntoQuery, Read};
-use macroquad::rand::gen_range;
+use legion::{component, world::SubWorld, Entity, EntityStore, IntoQuery};
 
 use crate::prelude::*;
 
@@ -22,7 +21,7 @@ pub fn roll_call(
     let all_bees: Vec<Entity> = Entity::query()
         .filter(component::<crate::bee::Bee>())
         .iter_mut(world)
-        .map(|e| e.clone())
+        .copied()
         .collect();
     assert_eq!(all_bees.len(), 1, "Expected exactly one bee entity");
     let camera = Camera {
@@ -45,4 +44,10 @@ fn follow_bee(world: &mut SubWorld, #[resource] camera: &mut Camera) {
         h: 200.,
     });
     set_camera(&camera.camera2d);
+}
+
+impl Camera {
+    pub fn screen_to_world(&self, point: Vec2) -> Vec2 {
+        self.camera2d.screen_to_world(point)
+    }
 }
