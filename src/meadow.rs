@@ -72,8 +72,8 @@ fn update_position(pos: &mut Position, vel: &Velocity, #[resource] clock: &GameC
 }
 
 #[system]
-fn draw_ground(#[resource] _: &Meadow) {
-    clear_background(Color::new(0.58, 0.78, 0.58, 1.00));
+fn draw_ground(#[resource] _: &Meadow, #[resource] settings: &Settings) {
+    clear_background(settings.meadow_color);
 }
 
 #[system(for_each)]

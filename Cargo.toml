@@ -4,11 +4,12 @@ version = "0.1.0"
 edition = "2018"
 publish = false
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+console = ["egui-macroquad"]
 
 [dependencies]
 array-init = "2.0.0"
-egui-macroquad = "0.7.0"
+egui-macroquad = { version = "0.7.0", optional = true }
 glam = "0.20.0"
 legion = { version = "0.4.0", features = [
     "wasm-bindgen",
@@ -18,7 +19,9 @@ macroquad = "0.3.10"
 wee_alloc = "0.4.5"
 wfc = { version = "0.10.4", features = ["js"] }
 
-[features]
+[dev-dependencies]
+convert_case = "0.4.0"
+image = { version = "0.23.14", default-features = false, features = ["png"] }
 
 [profile.release]
 # Do not perform backtrace for panic on release builds.
@@ -29,11 +32,3 @@ codegen-units = 1
 opt-level = 's' # or 'z' to optimize "aggressively" for size
 # Enable link time optimization.
 lto = true
-
-[dev-dependencies]
-convert_case = "0.4.0"
-
-[dev-dependencies.image]
-version = "0.23.14"
-default-features = false
-features = ["png"]

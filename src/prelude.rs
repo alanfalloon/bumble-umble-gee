@@ -1,4 +1,5 @@
 //! Where to stick the common vocabulary
+pub use crate::settings::Settings;
 use legion::Entity;
 pub use legion::{system, systems::Builder, Resources, Schedule, World};
 pub use macroquad::prelude::*;

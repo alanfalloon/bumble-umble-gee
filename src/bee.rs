@@ -18,8 +18,6 @@ use macroquad::prelude::*;
 pub struct Bee {
     destination: Vec2,
     thrust: Vec2,
-    mass: f32,
-    max_thrust: f32,
     texture: Texture2D,
 }
 
@@ -34,8 +32,6 @@ pub fn roll_call(
             Bee {
                 destination: meadow.rand_pos(),
                 thrust: Vec2::default(),
-                mass: 1.,
-                max_thrust: 100.,
                 texture: Texture2D::from_file_with_format(
                     crate::spritesheet::SPRITESHEET_PNG_BYTES,
                     Some(ImageFormat::Png),
@@ -61,23 +57,28 @@ fn update_destination(bee: &mut Bee, #[resource] inputs: &Inputs, #[resource] me
 }
 
 #[system(for_each)]
-fn head_for_destination(bee: &mut Bee, pos: &Position) {
+fn head_for_destination(bee: &mut Bee, pos: &Position, #[resource] settings: &Settings) {
     let disp = bee.destination - pos.0;
     let dist = disp.length();
-    bee.thrust = if dist > bee.max_thrust {
-        (disp / dist) * bee.max_thrust
+    bee.thrust = if dist > settings.max_thrust {
+        (disp / dist) * settings.max_thrust
     } else {
         disp
     }
 }
 
 #[system(for_each)]
-fn fly(bee: &Bee, vel: &mut Velocity, #[resource] clock: &GameClock) {
+fn fly(
+    bee: &Bee,
+    vel: &mut Velocity,
+    #[resource] clock: &GameClock,
+    #[resource] settings: &Settings,
+) {
     let Velocity(v) = *vel;
     // Add in a bit of drag, with a bit of random walk thrown in
     let wind = -v;
     let thrust = bee.thrust + wind * 0.7;
-    *vel = Velocity::from(v + thrust * bee.mass * clock.tick.as_secs_f32());
+    *vel = Velocity::from(v + thrust * settings.mass * clock.tick.as_secs_f32());
 }
 
 #[system]

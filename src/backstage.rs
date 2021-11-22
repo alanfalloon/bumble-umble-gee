@@ -8,7 +8,7 @@ use legion::{system, Resources, Schedule, World};
 pub struct StageManager {
     world: World,
     schedule: Schedule,
-    resources: Resources,
+    pub resources: Resources,
 }
 
 impl StageManager {
@@ -16,7 +16,9 @@ impl StageManager {
         let mut world = World::default();
         let mut builder = Schedule::builder();
         let mut resources = Resources::default();
-        // First, timekeeping. Add the clock and the system to keep it current.
+        // First, settings
+        resources.insert(Settings::default());
+        // Next timekeeping. Add the clock and the system to keep it current.
         resources.insert(GameClock {
             time: get_time(),
             tick: Duration::default(),
