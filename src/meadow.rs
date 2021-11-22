@@ -10,8 +10,15 @@ use crate::prelude::*;
 #[derive(Clone, Copy, Debug, PartialEq)]
 
 pub struct Meadow {
-    pub h: usize,
-    pub w: usize,
+    pub size: Vec2,
+}
+impl Meadow {
+    pub fn new(h: f32, w: f32) -> Meadow {
+        Meadow { size: vec2(w, h) }
+    }
+    pub fn clamp(&self, point: Vec2) -> Vec2 {
+        point.clamp(Vec2::ZERO, self.size)
+    }
 }
 /// A flower
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -26,7 +33,7 @@ pub fn roll_call(
     systems: &mut legion::systems::Builder,
     resources: &mut legion::systems::Resources,
 ) {
-    resources.insert(Meadow { h: 1_000, w: 1_000 });
+    resources.insert(Meadow::new(1_000., 1_000.));
     for _ in 0..100 {
         let pos = Vec2::new(gen_range(0., 1_000.), gen_range(0., 1_000.));
         let color = Color::new(

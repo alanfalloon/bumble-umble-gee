@@ -10,7 +10,7 @@ use crate::{
     prelude::*,
     spritesheet,
 };
-use legion::{system, world::SubWorld, Entity, IntoQuery};
+use legion::{system, world::SubWorld, Entity, EntityStore, IntoQuery};
 use macroquad::prelude::*;
 
 /// The bees stats
@@ -22,14 +22,19 @@ pub struct Bee {
     max_thrust: f32,
     texture: Texture2D,
 }
+/// The bees resource
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TheBee {
+    pub entity: Entity,
+}
 
 pub fn roll_call(
     world: &mut legion::world::World,
     systems: &mut legion::systems::Builder,
-    _resources: &mut legion::systems::Resources,
-) -> Entity {
+    resources: &mut legion::systems::Resources,
+) {
     let middle = Position::middle();
-    let bee_entity = world.push((
+    let entity = world.push((
         Bee {
             destination: middle.0 / 2.,
             thrust: Vec2::default(),
@@ -43,30 +48,18 @@ pub fn roll_call(
         middle,
         Velocity::default(),
     ));
+    resources.insert(TheBee { entity });
     systems.add_system(update_destination_system());
     systems.add_system(head_for_destination_system());
     systems.add_system(fly_system());
     systems.add_system(found_flower_system());
     systems.add_system(draw_system());
-    bee_entity
 }
 
 #[system(for_each)]
 fn update_destination(bee: &mut Bee, #[resource] inputs: &Inputs, #[resource] meadow: &Meadow) {
     if let Some(mouse_pos) = inputs.mouse_click {
-        bee.destination = mouse_pos;
-        if bee.destination.x > meadow.w as f32 {
-            bee.destination.x = meadow.w as f32
-        }
-        if bee.destination.y > meadow.h as f32 {
-            bee.destination.y = meadow.h as f32
-        }
-        if bee.destination.x < 0. {
-            bee.destination.x = 0.
-        }
-        if bee.destination.y < 0. {
-            bee.destination.y = 0.
-        }
+        bee.destination = meadow.clamp(mouse_pos);
     }
 }
 
@@ -94,13 +87,9 @@ fn fly(bee: &Bee, vel: &mut Velocity, #[resource] clock: &GameClock) {
 #[read_component(Bee)]
 #[write_component(Flower)]
 #[read_component(Position)]
-fn found_flower(world: &mut SubWorld) {
-    let bee_pos = {
-        let all_bees: Vec<_> = <(&Bee, &Position)>::query().iter_mut(world).collect();
-        assert_eq!(1, all_bees.len(), "Expected exactly one bee");
-        let Position(bee_pos) = all_bees[0].1;
-        *bee_pos
-    };
+fn found_flower(world: &mut SubWorld, #[resource] the_bee: &TheBee) {
+    let bee = world.entry_ref(the_bee.entity).expect("Bee missing");
+    let Position(bee_pos) = *bee.get_component::<Position>().expect("Bee missing pos");
     for (flower, Position(flower_pos)) in <(&mut Flower, &Position)>::query().iter_mut(world) {
         if bee_pos.distance_squared(*flower_pos) < flower.radius * flower.radius {
             flower.collected = true;

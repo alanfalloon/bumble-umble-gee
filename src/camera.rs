@@ -3,29 +3,21 @@
 //! Follow the bee, show us what is coming. Help us notice stuff. But be gentle,
 //! remember we are moving the bee with our touch.
 
-use legion::{component, world::SubWorld, Entity, EntityStore, IntoQuery};
+use legion::{world::SubWorld, EntityStore};
 
-use crate::prelude::*;
+use crate::{bee::TheBee, prelude::*};
 
 #[derive(Clone, Copy)]
 pub struct Camera {
-    bee: Entity,
     camera2d: Camera2D,
 }
 
 pub fn roll_call(
-    world: &mut legion::world::World,
+    _world: &mut legion::world::World,
     systems: &mut legion::systems::Builder,
     resources: &mut legion::systems::Resources,
 ) {
-    let all_bees: Vec<Entity> = Entity::query()
-        .filter(component::<crate::bee::Bee>())
-        .iter_mut(world)
-        .copied()
-        .collect();
-    assert_eq!(all_bees.len(), 1, "Expected exactly one bee entity");
     let camera = Camera {
-        bee: all_bees[0],
         camera2d: Camera2D::default(),
     };
     resources.insert(camera);
@@ -35,8 +27,8 @@ pub fn roll_call(
 #[system]
 #[read_component(Position)]
 #[read_component(Velocity)]
-fn follow_bee(world: &mut SubWorld, #[resource] camera: &mut Camera) {
-    let bee = world.entry_ref(camera.bee).expect("Bee missing");
+fn follow_bee(world: &mut SubWorld, #[resource] camera: &mut Camera, #[resource] the_bee: &TheBee) {
+    let bee = world.entry_ref(the_bee.entity).expect("Bee missing");
     let Position(pos) = *bee.get_component::<Position>().expect("Bee missing pos");
     let Velocity(vel) = *bee.get_component::<Velocity>().expect("Bee missing vel");
     let screen = vec2(screen_width(), screen_height());
