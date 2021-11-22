@@ -1,4 +1,5 @@
 //! Where to stick the common vocabulary
+use legion::Entity;
 pub use legion::{system, systems::Builder, Resources, Schedule, World};
 pub use macroquad::prelude::*;
 pub use std::time::Duration;
@@ -6,17 +7,6 @@ pub use std::time::Duration;
 /// A location
 #[derive(Clone, Copy, Debug, PartialEq, Default)]
 pub struct Position(pub Vec2);
-impl Position {
-    pub fn new(x: f32, y: f32) -> Position {
-        Position(Vec2::new(x, y))
-    }
-    pub fn middle() -> Position {
-        Position::from(Self::far_corner().0 / 2.)
-    }
-    pub fn far_corner() -> Position {
-        Self::new(screen_width(), screen_height())
-    }
-}
 impl From<Vec2> for Position {
     fn from(position: Vec2) -> Self {
         Position(position)
@@ -42,4 +32,10 @@ pub struct Inputs {
 pub struct GameClock {
     pub time: f64,
     pub tick: Duration,
+}
+
+/// The bees resource
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TheBee {
+    pub entity: Entity,
 }

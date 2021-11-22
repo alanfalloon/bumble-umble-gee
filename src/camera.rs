@@ -5,7 +5,7 @@
 
 use legion::{world::SubWorld, EntityStore};
 
-use crate::{bee::TheBee, prelude::*};
+use crate::prelude::*;
 
 #[derive(Clone, Copy)]
 pub struct Camera {

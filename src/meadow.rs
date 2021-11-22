@@ -19,6 +19,9 @@ impl Meadow {
     pub fn clamp(&self, point: Vec2) -> Vec2 {
         point.clamp(Vec2::ZERO, self.size)
     }
+    pub fn rand_pos(&self) -> Vec2 {
+        vec2(gen_range(0., self.size.x), gen_range(0., self.size.y))
+    }
 }
 /// A flower
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -33,9 +36,9 @@ pub fn roll_call(
     systems: &mut legion::systems::Builder,
     resources: &mut legion::systems::Resources,
 ) {
-    resources.insert(Meadow::new(1_000., 1_000.));
+    let meadow = Meadow::new(1_000., 1_000.);
     for _ in 0..100 {
-        let pos = Vec2::new(gen_range(0., 1_000.), gen_range(0., 1_000.));
+        let pos = meadow.rand_pos();
         let color = Color::new(
             gen_range(0.2, 1.),
             gen_range(0., 0.1),
@@ -52,6 +55,7 @@ pub fn roll_call(
             Position::from(pos),
         ));
     }
+    resources.insert(meadow);
     systems
         .add_system(update_position_system())
         .add_system(draw_ground_system())
@@ -80,6 +84,6 @@ fn draw_flower(flower: &Flower, pos: &Position) {
         pos.x,
         pos.y,
         flower.radius / 4.,
-        if flower.collected { BLACK } else { YELLOW },
+        if flower.collected { DARKBROWN } else { YELLOW },
     );
 }

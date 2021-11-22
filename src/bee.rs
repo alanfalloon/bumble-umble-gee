@@ -10,7 +10,7 @@ use crate::{
     prelude::*,
     spritesheet,
 };
-use legion::{system, world::SubWorld, Entity, EntityStore, IntoQuery};
+use legion::{system, world::SubWorld, EntityStore, IntoQuery};
 use macroquad::prelude::*;
 
 /// The bees stats
@@ -22,32 +22,29 @@ pub struct Bee {
     max_thrust: f32,
     texture: Texture2D,
 }
-/// The bees resource
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct TheBee {
-    pub entity: Entity,
-}
 
 pub fn roll_call(
     world: &mut legion::world::World,
     systems: &mut legion::systems::Builder,
     resources: &mut legion::systems::Resources,
 ) {
-    let middle = Position::middle();
-    let entity = world.push((
-        Bee {
-            destination: middle.0 / 2.,
-            thrust: Vec2::default(),
-            mass: 1.,
-            max_thrust: 100.,
-            texture: Texture2D::from_file_with_format(
-                crate::spritesheet::SPRITESHEET_PNG_BYTES,
-                Some(ImageFormat::Png),
-            ),
-        },
-        middle,
-        Velocity::default(),
-    ));
+    let entity = {
+        let meadow = resources.get::<Meadow>().expect("No meadow");
+        world.push((
+            Bee {
+                destination: meadow.rand_pos(),
+                thrust: Vec2::default(),
+                mass: 1.,
+                max_thrust: 100.,
+                texture: Texture2D::from_file_with_format(
+                    crate::spritesheet::SPRITESHEET_PNG_BYTES,
+                    Some(ImageFormat::Png),
+                ),
+            },
+            Position::from(meadow.rand_pos()),
+            Velocity::default(),
+        ))
+    };
     resources.insert(TheBee { entity });
     systems.add_system(update_destination_system());
     systems.add_system(head_for_destination_system());
