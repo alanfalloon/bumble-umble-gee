@@ -3,8 +3,12 @@
 //! Follow the users touch! Mine the flowers! Do your best little bee! We are
 //! rooting for you!
 
-use crate::{prelude::*, spritesheet};
-use legion::{system, Entity};
+use crate::{
+    meadow::{Flower, Meadow},
+    prelude::*,
+    spritesheet,
+};
+use legion::{system, world::SubWorld, Entity, IntoQuery};
 use macroquad::prelude::*;
 
 /// The bees stats
@@ -40,14 +44,27 @@ pub fn roll_call(
     systems.add_system(update_destination_system());
     systems.add_system(head_for_destination_system());
     systems.add_system(fly_system());
+    systems.add_system(found_flower_system());
     systems.add_system(draw_system());
     bee_entity
 }
 
 #[system(for_each)]
-fn update_destination(bee: &mut Bee, #[resource] inputs: &Inputs) {
+fn update_destination(bee: &mut Bee, #[resource] inputs: &Inputs, #[resource] meadow: &Meadow) {
     if let Some(mouse_pos) = inputs.mouse_click {
         bee.destination = mouse_pos;
+        if bee.destination.x > meadow.w as f32 {
+            bee.destination.x = meadow.w as f32
+        }
+        if bee.destination.y > meadow.h as f32 {
+            bee.destination.y = meadow.h as f32
+        }
+        if bee.destination.x < 0. {
+            bee.destination.x = 0.
+        }
+        if bee.destination.y < 0. {
+            bee.destination.y = 0.
+        }
     }
 }
 
@@ -69,6 +86,25 @@ fn fly(bee: &Bee, vel: &mut Velocity, #[resource] clock: &GameClock) {
     let wind = -v;
     let thrust = bee.thrust + wind * 0.7;
     *vel = Velocity::from(v + thrust * bee.mass * clock.tick.as_secs_f32());
+}
+
+#[system]
+#[read_component(Bee)]
+#[write_component(Flower)]
+#[read_component(Position)]
+fn found_flower(world: &mut SubWorld) {
+    let bee_pos = {
+        let all_bees: Vec<_> = <(&Bee, &Position)>::query().iter_mut(world).collect();
+        assert_eq!(1, all_bees.len(), "Expected exactly one bee");
+        let Position(bee_pos) = all_bees[0].1;
+        *bee_pos
+    };
+    for (flower, Position(flower_pos)) in <(&mut Flower, &Position)>::query().iter_mut(world) {
+        if bee_pos.distance_squared(*flower_pos) < flower.radius * flower.radius {
+            flower.collected = true;
+            return;
+        }
+    }
 }
 
 #[system(for_each)]
@@ -150,10 +186,10 @@ fn draw(bee: &Bee, pos: &Position) {
             RED,
         );
     }
-    draw_circle_lines(x, y, 3., 1., BLUE);
-    let heading = heading * 10.;
-    draw_line(x, y, x + heading.x, y + heading.y, 1., BLUE);
-    let heading = bee.thrust.normalize() * 10.;
-    draw_line(x, y, x + heading.x, y + heading.y, 1., GREEN);
-    draw_circle_lines(bee.destination.x, bee.destination.y, 2., 1., GREEN);
+    // draw_circle_lines(x, y, 3., 1., BLUE);
+    // let heading = heading * 10.;
+    // draw_line(x, y, x + heading.x, y + heading.y, 1., BLUE);
+    // let heading = bee.thrust.normalize() * 10.;
+    // draw_line(x, y, x + heading.x, y + heading.y, 1., GREEN);
+    draw_circle_lines(bee.destination.x, bee.destination.y, 2., 1., MAGENTA);
 }

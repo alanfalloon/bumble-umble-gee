@@ -34,14 +34,19 @@ pub fn roll_call(
 
 #[system]
 #[read_component(Position)]
+#[read_component(Velocity)]
 fn follow_bee(world: &mut SubWorld, #[resource] camera: &mut Camera) {
     let bee = world.entry_ref(camera.bee).expect("Bee missing");
     let Position(pos) = *bee.get_component::<Position>().expect("Bee missing pos");
+    let Velocity(vel) = *bee.get_component::<Velocity>().expect("Bee missing vel");
+    let screen = vec2(screen_width(), screen_height());
+    let aspect = screen.normalize() * vel.length().max(40.) * 5.;
+    let target = pos + vel - aspect / 2.;
     camera.camera2d = Camera2D::from_display_rect(Rect {
-        x: pos.x - 100.,
-        y: pos.y - 100.,
-        w: 200.,
-        h: 200.,
+        x: target.x,
+        y: target.y,
+        w: aspect.x,
+        h: aspect.y,
     });
     set_camera(&camera.camera2d);
 }

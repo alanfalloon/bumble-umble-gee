@@ -9,23 +9,24 @@ use crate::prelude::*;
 /// The meadow
 #[derive(Clone, Copy, Debug, PartialEq)]
 
-struct Meadow {
-    h: usize,
-    w: usize,
+pub struct Meadow {
+    pub h: usize,
+    pub w: usize,
 }
 /// A flower
 #[derive(Clone, Copy, Debug, PartialEq)]
-struct Flower {
+pub struct Flower {
     color: Color,
-    radius: f32,
+    pub radius: f32,
+    pub collected: bool,
 }
 
 pub fn roll_call(
     world: &mut legion::world::World,
     systems: &mut legion::systems::Builder,
-    _resources: &mut legion::systems::Resources,
+    resources: &mut legion::systems::Resources,
 ) {
-    world.push((Meadow { h: 1_000, w: 1_000 },));
+    resources.insert(Meadow { h: 1_000, w: 1_000 });
     for _ in 0..100 {
         let pos = Vec2::new(gen_range(0., 1_000.), gen_range(0., 1_000.));
         let color = Color::new(
@@ -34,8 +35,15 @@ pub fn roll_call(
             gen_range(0.2, 1.),
             1.,
         );
-        let radius = gen_range(15., 25.);
-        world.push((Flower { color, radius }, Position::from(pos)));
+        let radius = gen_range(10., 20.);
+        world.push((
+            Flower {
+                color,
+                radius,
+                collected: false,
+            },
+            Position::from(pos),
+        ));
     }
     systems
         .add_system(update_position_system())
@@ -52,8 +60,8 @@ fn update_position(pos: &mut Position, vel: &Velocity, #[resource] clock: &GameC
     *pos = Position::from(p + v * clock.tick.as_secs_f32())
 }
 
-#[system(for_each)]
-fn draw_ground(_: &Meadow) {
+#[system]
+fn draw_ground(#[resource] _: &Meadow) {
     clear_background(Color::new(0.58, 0.78, 0.58, 1.00));
 }
 
@@ -61,4 +69,10 @@ fn draw_ground(_: &Meadow) {
 fn draw_flower(flower: &Flower, pos: &Position) {
     let Position(pos) = pos;
     draw_circle(pos.x, pos.y, flower.radius, flower.color);
+    draw_circle(
+        pos.x,
+        pos.y,
+        flower.radius / 4.,
+        if flower.collected { BLACK } else { YELLOW },
+    );
 }

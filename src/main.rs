@@ -14,6 +14,9 @@ mod spritesheet;
 async fn main() {
     let mut stage_manager = backstage::StageManager::new();
     loop {
+        if is_key_pressed(KeyCode::Escape) {
+            break;
+        }
         stage_manager.execute();
         next_frame().await
     }
