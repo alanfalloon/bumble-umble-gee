@@ -3,6 +3,8 @@
 //! Follow the users touch! Mine the flowers! Do your best little bee! We are
 //! rooting for you!
 
+use std::ops::Rem;
+
 use crate::{
     meadow::{Flower, Meadow},
     prelude::*,
@@ -108,14 +110,15 @@ fn found_flower(world: &mut SubWorld) {
 }
 
 #[system(for_each)]
-fn draw(bee: &Bee, pos: &Position) {
+fn draw(bee: &Bee, pos: &Position, #[resource] clock: &GameClock) {
+    let frame_num = ((10. * clock.time) as usize).rem(3);
     // Texture coordinates s*
     let Rect {
         x: sx,
         y: sy,
         w: sw,
         h: sh,
-    } = spritesheet::BEE_FLYING_FRAMES[0].xy;
+    } = spritesheet::BEE_FLYING_FRAMES[frame_num].xy;
     // Scale the texture
     let (w, h) = (vec2(sw, sh) * 0.2).into();
     // Find the midpoint for the rotation
