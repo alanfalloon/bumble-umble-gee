@@ -42,6 +42,12 @@ impl StageManager {
     pub fn execute(&mut self) {
         self.schedule.execute(&mut self.world, &mut self.resources)
     }
+
+    pub fn settings(&self) -> atomic_refcell::AtomicRefMut<Settings> {
+        self.resources
+            .get_mut::<Settings>()
+            .expect("missing settings")
+    }
 }
 
 #[system]

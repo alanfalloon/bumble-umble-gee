@@ -109,6 +109,7 @@ name = "bumble-umble-gee"
 version = "0.1.0"
 dependencies = [
  "array-init",
+ "atomic_refcell",
  "convert_case",
  "egui-macroquad",
  "glam 0.20.0",

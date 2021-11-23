@@ -77,13 +77,17 @@ fn draw_ground(#[resource] _: &Meadow, #[resource] settings: &Settings) {
 }
 
 #[system(for_each)]
-fn draw_flower(flower: &Flower, pos: &Position) {
+fn draw_flower(flower: &Flower, pos: &Position, #[resource] settings: &Settings) {
     let Position(pos) = pos;
     draw_circle(pos.x, pos.y, flower.radius, flower.color);
     draw_circle(
         pos.x,
         pos.y,
-        flower.radius / 4.,
-        if flower.collected { DARKBROWN } else { YELLOW },
+        flower.radius * settings.flower_core_size / 1000.,
+        if flower.collected {
+            settings.flower_collected_color
+        } else {
+            settings.flower_uncollected_color
+        },
     );
 }

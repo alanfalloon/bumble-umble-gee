@@ -77,8 +77,8 @@ fn fly(
     let Velocity(v) = *vel;
     // Add in a bit of drag, with a bit of random walk thrown in
     let wind = -v;
-    let thrust = bee.thrust + wind * 0.7;
-    *vel = Velocity::from(v + thrust * settings.mass * clock.tick.as_secs_f32());
+    let thrust = bee.thrust + wind * settings.wind_resistance / 100.;
+    *vel = Velocity::from(v + clock.tick.as_secs_f32() * thrust / settings.mass);
 }
 
 #[system]
@@ -97,8 +97,8 @@ fn found_flower(world: &mut SubWorld, #[resource] the_bee: &TheBee) {
 }
 
 #[system(for_each)]
-fn draw(bee: &Bee, pos: &Position, #[resource] clock: &GameClock) {
-    let frame_num = ((10. * clock.time) as usize).rem(3);
+fn draw(bee: &Bee, pos: &Position, #[resource] clock: &GameClock, #[resource] settings: &Settings) {
+    let frame_num = ((settings.animation_speed as f64 * clock.time) as usize).rem(3);
     // Texture coordinates s*
     let Rect {
         x: sx,
@@ -107,7 +107,7 @@ fn draw(bee: &Bee, pos: &Position, #[resource] clock: &GameClock) {
         h: sh,
     } = spritesheet::BEE_FLYING_FRAMES[frame_num].xy;
     // Scale the texture
-    let (w, h) = (vec2(sw, sh) * 0.2).into();
+    let (w, h) = (vec2(sw, sh) * settings.bee_size / 1000.).into();
     // Find the midpoint for the rotation
     let Position(pos) = *pos;
     let (x, y) = pos.into();
