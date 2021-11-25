@@ -41,12 +41,7 @@ pub fn roll_call(
         let meadow = Meadow::new(settings.meadow_height * 100., settings.meadow_width * 100.);
         for _ in 0..settings.num_flowers * 10 {
             let pos = meadow.rand_pos();
-            let color = Color::new(
-                gen_range(0.2, 1.),
-                gen_range(0., 0.1),
-                gen_range(0.2, 1.),
-                1.,
-            );
+            let color = rand_flower_color();
             let radius = gen_range(settings.flower_size.start, settings.flower_size.end);
             world.push((
                 Flower {
@@ -94,4 +89,14 @@ fn draw_flower(flower: &Flower, pos: &Position, #[resource] settings: &Settings)
             settings.flower_uncollected_color
         },
     );
+}
+
+/// Make reasonable flower colors, basically green<=blue&red, and at least one maxed channel.
+fn rand_flower_color() -> Color {
+    let r = gen_range(0., 1.);
+    let b = gen_range(0., 1.);
+    let g = gen_range(0f32, 1.).min(r).min(b);
+    // scale them all so that the max channel is 1.
+    let [r, g, b]: [f32; 3] = (vec3(r, g, b) / r.max(b)).into();
+    Color::new(r, g, b, 1.)
 }
