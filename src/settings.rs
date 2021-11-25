@@ -29,8 +29,8 @@ impl Default for Settings {
             flower_core_size: 250.,
             flower_uncollected_color: YELLOW,
             flower_collected_color: DARKBROWN,
-            max_zoom: 100.,
-            velocity_zoom: 50.,
+            max_zoom: 400.,
+            velocity_zoom: 75.,
         }
     }
 }
