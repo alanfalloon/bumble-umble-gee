@@ -36,25 +36,29 @@ pub fn roll_call(
     systems: &mut legion::systems::Builder,
     resources: &mut legion::systems::Resources,
 ) {
-    let meadow = Meadow::new(1_000., 1_000.);
-    for _ in 0..100 {
-        let pos = meadow.rand_pos();
-        let color = Color::new(
-            gen_range(0.2, 1.),
-            gen_range(0., 0.1),
-            gen_range(0.2, 1.),
-            1.,
-        );
-        let radius = gen_range(10., 20.);
-        world.push((
-            Flower {
-                color,
-                radius,
-                collected: false,
-            },
-            Position::from(pos),
-        ));
-    }
+    let meadow = {
+        let settings = resources.get::<Settings>().expect("Missing settings");
+        let meadow = Meadow::new(settings.meadow_height * 100., settings.meadow_width * 100.);
+        for _ in 0..settings.num_flowers * 10 {
+            let pos = meadow.rand_pos();
+            let color = Color::new(
+                gen_range(0.2, 1.),
+                gen_range(0., 0.1),
+                gen_range(0.2, 1.),
+                1.,
+            );
+            let radius = gen_range(settings.flower_size.start, settings.flower_size.end);
+            world.push((
+                Flower {
+                    color,
+                    radius,
+                    collected: false,
+                },
+                Position::from(pos),
+            ));
+        }
+        meadow
+    };
     resources.insert(meadow);
     systems
         .add_system(update_position_system())

@@ -12,12 +12,12 @@ pub struct StageManager {
 }
 
 impl StageManager {
-    pub fn new() -> StageManager {
+    pub fn new(settings: Settings) -> StageManager {
         let mut world = World::default();
         let mut builder = Schedule::builder();
         let mut resources = Resources::default();
         // First, settings
-        resources.insert(Settings::default());
+        resources.insert(settings);
         // Next timekeeping. Add the clock and the system to keep it current.
         resources.insert(GameClock {
             time: get_time(),

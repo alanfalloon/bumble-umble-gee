@@ -1,4 +1,3 @@
-#[cfg(feature = "console")]
 use crate::settings::Settings;
 #[cfg(feature = "console")]
 use egui_macroquad::egui;
@@ -17,9 +16,12 @@ mod spritesheet;
 
 #[macroquad::main("BumbleUmbleGee")]
 async fn main() {
-    let mut stage_manager = backstage::StageManager::new();
+    let mut stage_manager = backstage::StageManager::new(Settings::default());
     while !stage_manager.settings().want_quit() {
-        stage_manager = backstage::StageManager::new();
+        stage_manager = {
+            let settings = stage_manager.settings().clone();
+            backstage::StageManager::new(settings)
+        };
         while !stage_manager.settings().want_restart() {
             // Process keys, mouse etc.
             #[cfg(feature = "console")]
