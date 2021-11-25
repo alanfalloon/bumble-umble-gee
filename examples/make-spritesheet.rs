@@ -201,8 +201,8 @@ impl Row {
             );
             frames.push(frame_img);
         }
-        // Sprites scale the largest dimension to 128
-        const MAX: u32 = 128;
+        // Sprites are scaled down until the largest dimension is MAX
+        const MAX: u32 = 256;
         let frame_size = if original_size.0 > original_size.1 {
             let scaled = original_size.1 as f32 * MAX as f32 / original_size.0 as f32;
             (MAX, scaled as u32)
