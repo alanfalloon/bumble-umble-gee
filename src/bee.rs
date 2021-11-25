@@ -98,7 +98,8 @@ fn found_flower(world: &mut SubWorld, #[resource] the_bee: &TheBee) {
 
 #[system(for_each)]
 fn draw(bee: &Bee, pos: &Position, #[resource] clock: &GameClock, #[resource] settings: &Settings) {
-    let frame_num = ((settings.animation_speed as f64 * clock.time) as usize).rem(3);
+    let frame_num = ((settings.animation_speed as f64 * clock.time) as usize)
+        .rem(spritesheet::BEE_FLYING_FRAMES.len());
     // Texture coordinates s*
     let Rect {
         x: sx,

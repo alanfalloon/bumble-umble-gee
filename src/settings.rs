@@ -22,14 +22,14 @@ impl Default for Settings {
             restart: false,
             mass: 1.,
             max_thrust: 100.,
-            animation_speed: 10.,
+            animation_speed: 30.,
             wind_resistance: 70.,
             meadow_color: Color::new(0.58, 0.78, 0.58, 1.00),
             bee_size: 200.,
             flower_core_size: 250.,
             flower_uncollected_color: YELLOW,
             flower_collected_color: DARKBROWN,
-            max_zoom: 40.,
+            max_zoom: 100.,
             velocity_zoom: 50.,
         }
     }
