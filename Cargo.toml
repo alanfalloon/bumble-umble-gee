@@ -17,6 +17,7 @@ legion = { version = "0.4.0", features = [
     "codegen",
 ], default-features = false }
 macroquad = "0.3.10"
+static_aabb2d_index = "0.6.0"
 wee_alloc = "0.4.5"
 wfc = { version = "0.10.4", features = ["js"] }
 
@@ -25,6 +26,8 @@ convert_case = "0.4.0"
 image = { version = "0.23.14", default-features = false, features = ["png"] }
 
 [profile.release]
+# Symbols, for profiling
+debug = true
 # Do not perform backtrace for panic on release builds.
 panic = 'abort'
 # Perform optimizations on all codegen units.

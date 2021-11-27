@@ -9,6 +9,7 @@ use crate::prelude::*;
 
 #[derive(Clone, Copy)]
 pub struct Camera {
+    pub rect: Rect,
     camera2d: Camera2D,
 }
 
@@ -18,6 +19,7 @@ pub fn roll_call(
     resources: &mut legion::systems::Resources,
 ) {
     let camera = Camera {
+        rect: Rect::default(),
         camera2d: Camera2D::default(),
     };
     resources.insert(camera);
@@ -40,12 +42,13 @@ fn follow_bee(
     let aspect =
         screen.normalize() * (vel.length() * settings.velocity_zoom / 10.).max(settings.max_zoom);
     let target = pos + vel - aspect / 2.;
-    camera.camera2d = Camera2D::from_display_rect(Rect {
+    camera.rect = Rect {
         x: target.x,
         y: target.y,
         w: aspect.x,
         h: aspect.y,
-    });
+    };
+    camera.camera2d = Camera2D::from_display_rect(camera.rect);
     set_camera(&camera.camera2d);
 }
 
