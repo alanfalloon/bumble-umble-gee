@@ -1,8 +1,8 @@
 //! Prepare the sprite sheet and generate the import code.
 use convert_case::{Case, Casing};
 use image::{
-    imageops::{resize, FilterType},
-    DynamicImage, GenericImage, GenericImageView, ImageBuffer, RgbaImage,
+    imageops::{crop_imm, resize, FilterType},
+    GenericImage, ImageBuffer, Pixel, RgbaImage,
 };
 use std::{
     collections::BTreeMap,
@@ -103,14 +103,12 @@ pub const {var}_FRAMES: [FrameRect; {}] = [
             let x_offset = frame_num as u32 * frame_x;
             let u = x_offset as f32 / spritesheet_x as f32;
             println!("Frame {} x-offset: {} ({:.3}u)", frame_num, x_offset, u);
-            println!("Resizing frame {}", frame_num);
-            let frame_img = resize(&frame_src_image, frame_x, frame_y, FilterType::Lanczos3);
             println!(
                 "Copying frame {} to spritesheet at {}x{} ({}x{}uv)",
                 frame_num, x_offset, y_offset, u, v
             );
             spritesheet
-                .copy_from(&frame_img, x_offset, y_offset)
+                .copy_from(&frame_src_image, x_offset, y_offset)
                 .unwrap();
             spritesheet_rs
                 .write_all(
@@ -178,7 +176,7 @@ fn find_all_sprite_frames() -> SpriteFrames {
 #[derive(Clone)]
 struct Row {
     frame_size: (u32, u32),
-    frames: Vec<DynamicImage>,
+    frames: Vec<RgbaImage>,
 }
 impl Row {
     fn from_frames<I, P>(frame_paths: I) -> Self
@@ -201,20 +199,38 @@ impl Row {
             );
             frames.push(frame_img);
         }
+        // Find the axis-aligned bounding box that contains all the frames
+        let bb = {
+            let mut bb = AABB::default();
+            for frame in &frames {
+                let frame_bb = AABB::calculate(frame);
+                bb.add_aabb(&frame_bb);
+            }
+            bb
+        };
+        let cropped_size = bb.dimensions();
         // Sprites are scaled down until the largest dimension is MAX
         const MAX: u32 = 256;
-        let frame_size = if original_size.0 > original_size.1 {
-            let scaled = original_size.1 as f32 * MAX as f32 / original_size.0 as f32;
+        let frame_size = if cropped_size.0 > cropped_size.1 {
+            let scaled = cropped_size.1 as f32 * MAX as f32 / cropped_size.0 as f32;
             (MAX, scaled as u32)
         } else {
-            let scaled = original_size.0 as f32 * MAX as f32 / original_size.1 as f32;
+            let scaled = cropped_size.0 as f32 * MAX as f32 / cropped_size.1 as f32;
             (scaled as u32, MAX)
         };
+        // Crop and scale all images
+        let frames = frames
+            .into_iter()
+            .map(|img| {
+                let cropped = crop_imm(&img, bb.min_x, bb.min_y, cropped_size.0, cropped_size.1);
+                resize(&cropped, frame_size.0, frame_size.1, FilterType::Lanczos3)
+            })
+            .collect();
         Self { frame_size, frames }
     }
 }
 
-fn get_image<P: AsRef<Path>>(path: P) -> DynamicImage {
+fn get_image<P: AsRef<Path>>(path: P) -> RgbaImage {
     let path = path.as_ref();
     println!("Loading {}", path.display());
     let img = image::load(
@@ -223,5 +239,61 @@ fn get_image<P: AsRef<Path>>(path: P) -> DynamicImage {
     )
     .unwrap();
     println!("Done Loading {}", path.display());
-    img
+    img.rotate90().into_rgba8()
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+struct AABB {
+    min_x: u32,
+    min_y: u32,
+    max_x: u32,
+    max_y: u32,
+}
+impl AABB {
+    fn calculate(img: &RgbaImage) -> Self {
+        let (max_x, max_y) = img.dimensions();
+        let mut bb = Self::default();
+        for y in 0..max_y {
+            for x in 0..max_x {
+                let pix = img.get_pixel(x, y);
+                let alpha = pix.channels()[3];
+                if alpha > 0 {
+                    bb.add_point(x, y);
+                }
+            }
+        }
+        bb
+    }
+    fn add_point(&mut self, x: u32, y: u32) {
+        if *self == Self::default() {
+            *self = AABB {
+                min_x: x,
+                max_x: x,
+                min_y: y,
+                max_y: y,
+            };
+        } else {
+            *self = AABB {
+                min_x: self.min_x.min(x),
+                max_x: self.max_x.max(x),
+                min_y: self.min_y.min(y),
+                max_y: self.max_y.max(y),
+            };
+        }
+    }
+    fn add_aabb(&mut self, other: &Self) {
+        if *self == Self::default() {
+            *self = *other;
+        } else {
+            *self = AABB {
+                min_x: self.min_x.min(other.min_x),
+                max_x: self.max_x.max(other.max_x),
+                min_y: self.min_y.min(other.min_y),
+                max_y: self.max_y.max(other.max_y),
+            };
+        }
+    }
+    fn dimensions(&self) -> (u32, u32) {
+        (self.max_x - self.min_x, self.max_y - self.min_y)
+    }
 }

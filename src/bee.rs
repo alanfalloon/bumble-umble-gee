@@ -13,6 +13,24 @@ use crate::{
 use legion::{system, world::SubWorld, EntityStore, IntoQuery};
 use macroquad::prelude::*;
 
+/// This is the bees sprite rect translated so the bee position is at the
+/// origin.
+const BEE_SPRITE: Rect = Rect {
+    x: -(spritesheet::BEE_FLYING_FRAME_SIZE.x as f32 * 0.85),
+    y: -(spritesheet::BEE_FLYING_FRAME_SIZE.y as f32 * 0.5),
+    w: spritesheet::BEE_FLYING_FRAME_SIZE.x as f32,
+    h: spritesheet::BEE_FLYING_FRAME_SIZE.y as f32,
+};
+/// This is the Bees hitbox relative to the bee position. To calculate the
+/// final transformed hitbox, it must go through the same transformations as the
+/// sprite itself.
+const BEE_HITBOX: Rect = Rect {
+    x: BEE_SPRITE.x,
+    y: -BEE_SPRITE.h / 6.0,
+    w: -BEE_SPRITE.x,
+    h: BEE_SPRITE.h / 3.0,
+};
+
 /// The bees stats
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Bee {
@@ -100,52 +118,17 @@ fn found_flower(world: &mut SubWorld, #[resource] the_bee: &TheBee) {
 fn draw(bee: &Bee, pos: &Position, #[resource] clock: &GameClock, #[resource] settings: &Settings) {
     let frame_num = ((settings.animation_speed as f64 * clock.time) as usize)
         .rem(spritesheet::BEE_FLYING_FRAMES.len());
-    // Texture coordinates s*
-    let Rect {
-        x: sx,
-        y: sy,
-        w: sw,
-        h: sh,
-    } = spritesheet::BEE_FLYING_FRAMES[frame_num].xy;
-    // Scale the texture
-    let (w, h) = (vec2(sw, sh) * settings.bee_size / 1000.).into();
-    // Find the midpoint for the rotation
+    let animation_frame = &spritesheet::BEE_FLYING_FRAMES[frame_num];
     let Position(pos) = *pos;
-    let (x, y) = pos.into();
-    let points = {
-        // half-width and half-height
-        let hw = w / 2.;
-        let hh = h / 2.;
-        [
-            vec2(x - hw, y - hh) - pos,
-            vec2(x + hw, y - hh) - pos,
-            vec2(x + hw, y + hh) - pos,
-            vec2(x - hw, y + hh) - pos,
-        ]
-    };
-    let texture_uv: [Vec2; 4] = {
-        let tx = bee.texture.width();
-        let ty = bee.texture.height();
-        [
-            vec2(sx / tx, sy / ty),
-            vec2((sx + sw) / tx, sy / ty),
-            vec2((sx + sw) / tx, (sy + sh) / ty),
-            vec2(sx / tx, (sy + sh) / ty),
-        ]
-    };
-    // Rotation matrix is:
-    // | cos t; -sin t |
-    // | sin t;  cos t |
-
-    // Since `heading` is a unit rotation, then normally `cos t == heading.x`
-    // and `sin t == heading.y`, *but* since these sprites treat "up" as
-    // "forward" we need to adjust by rotating 90deg. I drew a picture in
-    // Notes.key.
-    let heading = bee.thrust.normalize().perp();
-    // | heading.x; -heading.y |
-    // | heading.y;  heading.x |
-    let rot = Mat2::from_cols_array_2d(&[[heading.x, heading.y], [-heading.y, heading.x]]);
-    let points: [_; 4] = array_init::array_init(|n| rot * points[n] + pos);
+    let points = Quad::from_rect(&BEE_SPRITE)
+        .scale_to_origin(settings.bee_size / 1000.)
+        .rotate_to(bee.thrust.normalize())
+        .translate(pos);
+    let hitbox = Quad::from_rect(&BEE_HITBOX)
+        .scale_to_origin(settings.bee_size / 1000.)
+        .rotate_to(bee.thrust.normalize())
+        .translate(pos);
+    let texture_uv = Quad::from_rect(&animation_frame.uv);
     // Vertices and triangles:
     //  0 - 1
     //  | \ |
@@ -173,14 +156,18 @@ fn draw(bee: &Bee, pos: &Position, #[resource] clock: &GameClock, #[resource] se
             points[fr].y,
             points[to].x,
             points[to].y,
-            1.,
+            0.5,
+            YELLOW,
+        );
+        draw_line(
+            hitbox[fr].x,
+            hitbox[fr].y,
+            hitbox[to].x,
+            hitbox[to].y,
+            0.5,
             RED,
         );
     }
-    // draw_circle_lines(x, y, 3., 1., BLUE);
-    // let heading = heading * 10.;
-    // draw_line(x, y, x + heading.x, y + heading.y, 1., BLUE);
-    // let heading = bee.thrust.normalize() * 10.;
-    // draw_line(x, y, x + heading.x, y + heading.y, 1., GREEN);
     draw_circle_lines(bee.destination.x, bee.destination.y, 2., 1., MAGENTA);
+    draw_circle_lines(pos.x, pos.y, 1., 0.5, YELLOW);
 }
