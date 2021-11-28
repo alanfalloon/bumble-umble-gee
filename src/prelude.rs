@@ -86,6 +86,20 @@ impl Quad {
         Quad(array_init::array_init(|n| rot * self.0[n]))
     }
 
+    pub fn bb(&self) -> Rect {
+        let cmp_f32 = |a: &f32, b: &f32| a.partial_cmp(b).unwrap();
+        let left = self.0.iter().map(|v| v.x).min_by(cmp_f32).unwrap();
+        let right = self.0.iter().map(|v| v.x).max_by(cmp_f32).unwrap();
+        let top = self.0.iter().map(|v| v.y).min_by(cmp_f32).unwrap();
+        let bottom = self.0.iter().map(|v| v.y).max_by(cmp_f32).unwrap();
+        Rect {
+            x: left,
+            y: top,
+            w: right - left,
+            h: bottom - top,
+        }
+    }
+
     pub fn sides(&self) -> [(Vec2, Vec2); 4] {
         array_init::from_iter(
             Self::SIDE_INDICES

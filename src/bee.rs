@@ -10,7 +10,7 @@ use crate::{
     prelude::*,
     spritesheet,
 };
-use legion::{system, world::SubWorld, EntityStore, IntoQuery};
+use legion::{system, world::SubWorld, EntityStore};
 use macroquad::prelude::*;
 
 /// This is the bees sprite rect translated so the bee position is at the
@@ -98,13 +98,32 @@ fn fly(
 #[read_component(Bee)]
 #[write_component(Flower)]
 #[read_component(Position)]
-fn found_flower(world: &mut SubWorld, #[resource] the_bee: &TheBee) {
+fn found_flower(
+    world: &mut SubWorld,
+    #[resource] the_bee: &TheBee,
+    #[resource] meadow: &Meadow,
+    #[resource] settings: &Settings,
+) {
     let bee = world.entry_ref(the_bee.entity).expect("Bee missing");
     let Position(bee_pos) = *bee.get_component::<Position>().expect("Bee missing pos");
-    for (flower, Position(flower_pos)) in <(&mut Flower, &Position)>::query().iter_mut(world) {
-        if bee_pos.distance_squared(*flower_pos) < flower.radius * flower.radius {
+    let bee = *bee.get_component::<Bee>().expect("Bee missing bee data");
+    let hitbox = Quad::from_rect(&BEE_HITBOX)
+        .scale_to_origin(settings.bee_size / 1000.)
+        .rotate_to(bee.thrust.normalize())
+        .translate(bee_pos);
+
+    for index in meadow.flower_index_within(hitbox.bb()) {
+        let mut flower_entry = world
+            .entry_mut(meadow.flower_entities[index])
+            .expect("flower disappeared");
+        let Position(flower_pos) = *flower_entry
+            .get_component::<Position>()
+            .expect("Flower missing pos");
+        let flower = flower_entry
+            .get_component_mut::<Flower>()
+            .expect("Flower missing flower data");
+        if bee_pos.distance_squared(flower_pos) < flower.radius * flower.radius {
             flower.collected = true;
-            return;
         }
     }
 }
