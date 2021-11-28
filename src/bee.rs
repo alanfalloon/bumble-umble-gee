@@ -12,6 +12,7 @@ use crate::{
 };
 use legion::{system, world::SubWorld, EntityStore};
 use macroquad::prelude::*;
+use parry2d::{math::Isometry, query::intersection_test, shape::Ball};
 
 /// This is the bees sprite rect translated so the bee position is at the
 /// origin.
@@ -111,7 +112,8 @@ fn found_flower(
         .scale_to_origin(settings.bee_size / 1000.)
         .rotate_to(bee.thrust.normalize())
         .translate(bee_pos);
-
+    let bee_shape = hitbox.polyline();
+    let identity = Isometry::identity();
     for index in meadow.flower_index_within(hitbox.bb()) {
         let mut flower_entry = world
             .entry_mut(meadow.flower_entities[index])
@@ -122,7 +124,9 @@ fn found_flower(
         let flower = flower_entry
             .get_component_mut::<Flower>()
             .expect("Flower missing flower data");
-        if bee_pos.distance_squared(flower_pos) < flower.radius * flower.radius {
+        let flower_shape = Ball::new(flower.radius);
+        let flower_isometry = Isometry::translation(flower_pos.x, flower_pos.y);
+        if intersection_test(&identity, &bee_shape, &flower_isometry, &flower_shape).unwrap() {
             flower.collected = true;
         }
     }

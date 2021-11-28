@@ -3,6 +3,11 @@ pub use crate::settings::Settings;
 use legion::Entity;
 pub use legion::{system, systems::Builder, Resources, Schedule, World};
 pub use macroquad::prelude::*;
+use parry2d::{
+    math::{Point, Real},
+    na::Point2,
+    shape::Polyline,
+};
 use std::ops::Index;
 pub use std::time::Duration;
 
@@ -98,6 +103,16 @@ impl Quad {
             w: right - left,
             h: bottom - top,
         }
+    }
+
+    pub fn polyline(&self) -> Polyline {
+        let vertices: Vec<Point<Real>> = self.0.iter().map(|v| Point2::new(v.x, v.y)).collect();
+        let indices: Vec<[u32; 2]> = Self::SIDE_INDICES
+            .iter()
+            .copied()
+            .map(|(from, to)| [from as u32, to as u32])
+            .collect();
+        Polyline::new(vertices, Some(indices))
     }
 
     pub fn sides(&self) -> [(Vec2, Vec2); 4] {
