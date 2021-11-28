@@ -42,10 +42,19 @@ pub struct TheBee {
     pub entity: Entity,
 }
 
-/// A quadrelateral of points. Points appear clockwise.
+/// A quadrilateral of points. Points appear clockwise.
 pub struct Quad(pub [Vec2; 4]);
 
 impl Quad {
+    /// Vertices and triangles for tessellating a sprite:
+    ///  0 - 1
+    ///  | \ |
+    ///  3 - 2
+    const TESS_INDICES: [u16; 6] = [0, 1, 2, 0, 2, 3];
+
+    /// Side indices
+    const SIDE_INDICES: [(usize, usize); 4] = [(0, 1), (1, 2), (2, 3), (3, 0)];
+
     pub fn from_rect(rect: &Rect) -> Self {
         Quad([
             vec2(rect.left(), rect.top()),
@@ -75,6 +84,43 @@ impl Quad {
         // | unit.y;  unit.x |
         let rot = Mat2::from_cols_array_2d(&[[unit.x, unit.y], [-unit.y, unit.x]]);
         Quad(array_init::array_init(|n| rot * self.0[n]))
+    }
+
+    pub fn sides(&self) -> [(Vec2, Vec2); 4] {
+        array_init::from_iter(
+            Self::SIDE_INDICES
+                .iter()
+                .copied()
+                .map(|(from, to)| (self.0[from], self.0[to])),
+        )
+        .unwrap()
+    }
+
+    pub fn draw_sprite(&self, texture: Texture2D, uv: Rect, color: Color) {
+        let uv = Self::from_rect(&uv);
+        let indices = Vec::from(Self::TESS_INDICES);
+        let vertices: Vec<_> = {
+            use macroquad::models::Vertex;
+            (0..4)
+                .into_iter()
+                .map(|n| Vertex {
+                    position: self[n].extend(0.),
+                    uv: uv[n],
+                    color,
+                })
+                .collect()
+        };
+        draw_mesh(&Mesh {
+            vertices,
+            indices,
+            texture: Some(texture),
+        });
+    }
+
+    pub fn draw_sides(&self, thickness: f32, color: Color) {
+        for (from, to) in self.sides() {
+            draw_line(from.x, from.y, to.x, to.y, thickness, color);
+        }
     }
 }
 impl Index<usize> for Quad {

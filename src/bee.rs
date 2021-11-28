@@ -125,50 +125,16 @@ fn draw(
         .scale_to_origin(settings.bee_size / 1000.)
         .rotate_to(bee.thrust.normalize())
         .translate(pos);
-    let hitbox = Quad::from_rect(&BEE_HITBOX)
-        .scale_to_origin(settings.bee_size / 1000.)
-        .rotate_to(bee.thrust.normalize())
-        .translate(pos);
-    let texture_uv = Quad::from_rect(&animation_frame.uv);
-    // Vertices and triangles:
-    //  0 - 1
-    //  | \ |
-    //  3 - 2
-    let indices = vec![0, 1, 2, 0, 2, 3];
-    let vertices: Vec<_> = {
-        use macroquad::models::Vertex;
-        (0..4)
-            .into_iter()
-            .map(|n| Vertex {
-                position: points[n].extend(0.),
-                uv: texture_uv[n],
-                color: WHITE,
-            })
-            .collect()
-    };
-    draw_mesh(&Mesh {
-        vertices,
-        indices,
-        texture: Some(*texture),
-    });
-    for (fr, to) in [(0, 1), (1, 2), (2, 3), (3, 0)] {
-        draw_line(
-            points[fr].x,
-            points[fr].y,
-            points[to].x,
-            points[to].y,
-            0.5,
-            YELLOW,
-        );
-        draw_line(
-            hitbox[fr].x,
-            hitbox[fr].y,
-            hitbox[to].x,
-            hitbox[to].y,
-            0.5,
-            RED,
-        );
+    points.draw_sprite(*texture, animation_frame.uv, WHITE);
+    #[cfg(feature = "wireframes")]
+    {
+        points.draw_sides(0.5, YELLOW);
+        let hitbox = Quad::from_rect(&BEE_HITBOX)
+            .scale_to_origin(settings.bee_size / 1000.)
+            .rotate_to(bee.thrust.normalize())
+            .translate(pos);
+        hitbox.draw_sides(0.5, RED);
+        draw_circle_lines(bee.destination.x, bee.destination.y, 2., 1., MAGENTA);
+        draw_circle_lines(pos.x, pos.y, 1., 0.5, YELLOW);
     }
-    draw_circle_lines(bee.destination.x, bee.destination.y, 2., 1., MAGENTA);
-    draw_circle_lines(pos.x, pos.y, 1., 0.5, YELLOW);
 }

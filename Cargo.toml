@@ -6,6 +6,7 @@ publish = false
 
 [features]
 console = ["egui-macroquad"]
+wireframes = []
 
 [dependencies]
 array-init = "2.0.0"

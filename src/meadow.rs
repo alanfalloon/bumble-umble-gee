@@ -122,7 +122,7 @@ fn draw_flower(
     for flower_entry in meadow.flower_index_within(camera.rect).map(|index| {
         world
             .entry_ref(meadow.flower_entities[index])
-            .expect("flower dissapeared")
+            .expect("flower disappeared")
     }) {
         let Position(pos) = *flower_entry
             .get_component::<Position>()
@@ -131,62 +131,16 @@ fn draw_flower(
             .get_component::<Flower>()
             .expect("Flower missing flower data");
         let points = Quad::from_rect(&FLOWER_SPRITE)
-            .scale_to_origin(flower.radius / 128.)
+            .scale_to_origin(flower.radius / (FLOWER_SPRITE.w / 2.))
             .translate(pos);
-        // Vertices and triangles:
-        //  0 - 1
-        //  | \ |
-        //  3 - 2
-        {
-            let indices = vec![0, 1, 2, 0, 2, 3];
-            let texture_uv = Quad::from_rect(&spritesheet::FLOWER_FRAMES[0].uv);
-            let vertices: Vec<_> = {
-                use macroquad::models::Vertex;
-                (0..4)
-                    .into_iter()
-                    .map(|n| Vertex {
-                        position: points[n].extend(0.),
-                        uv: texture_uv[n],
-                        color: flower.color,
-                    })
-                    .collect()
-            };
-            draw_mesh(&Mesh {
-                vertices,
-                indices,
-                texture: Some(*texture),
-            });
-            for (fr, to) in [(0, 1), (1, 2), (2, 3), (3, 0)] {
-                draw_line(
-                    points[fr].x,
-                    points[fr].y,
-                    points[to].x,
-                    points[to].y,
-                    0.5,
-                    YELLOW,
-                );
-            }
-            draw_circle_lines(pos.x, pos.y, flower.radius, 0.5, RED);
-        }
+        points.draw_sprite(*texture, spritesheet::FLOWER_FRAMES[0].uv, flower.color);
         if !flower.collected {
-            let indices = vec![0, 1, 2, 0, 2, 3];
-            let texture_uv = Quad::from_rect(&spritesheet::FLOWER_FRAMES[1].uv);
-            let vertices: Vec<_> = {
-                use macroquad::models::Vertex;
-                (0..4)
-                    .into_iter()
-                    .map(|n| Vertex {
-                        position: points[n].extend(0.),
-                        uv: texture_uv[n],
-                        color: WHITE,
-                    })
-                    .collect()
-            };
-            draw_mesh(&Mesh {
-                vertices,
-                indices,
-                texture: Some(*texture),
-            });
+            points.draw_sprite(*texture, spritesheet::FLOWER_FRAMES[1].uv, WHITE);
+        }
+        #[cfg(feature = "wireframes")]
+        {
+            points.draw_sides(0.5, YELLOW);
+            draw_circle_lines(pos.x, pos.y, flower.radius, 0.5, RED);
         }
     }
 }
