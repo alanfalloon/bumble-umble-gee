@@ -36,7 +36,6 @@ const BEE_HITBOX: Rect = Rect {
 pub struct Bee {
     destination: Vec2,
     thrust: Vec2,
-    texture: Texture2D,
 }
 
 pub fn roll_call(
@@ -50,10 +49,6 @@ pub fn roll_call(
             Bee {
                 destination: meadow.rand_pos(),
                 thrust: Vec2::default(),
-                texture: Texture2D::from_file_with_format(
-                    crate::spritesheet::SPRITESHEET_PNG_BYTES,
-                    Some(ImageFormat::Png),
-                ),
             },
             Position::from(meadow.rand_pos()),
             Velocity::default(),
@@ -115,7 +110,13 @@ fn found_flower(world: &mut SubWorld, #[resource] the_bee: &TheBee) {
 }
 
 #[system(for_each)]
-fn draw(bee: &Bee, pos: &Position, #[resource] clock: &GameClock, #[resource] settings: &Settings) {
+fn draw(
+    bee: &Bee,
+    pos: &Position,
+    #[resource] clock: &GameClock,
+    #[resource] settings: &Settings,
+    #[resource] texture: &Texture2D,
+) {
     let frame_num = ((settings.animation_speed as f64 * clock.time) as usize)
         .rem(spritesheet::BEE_FLYING_FRAMES.len());
     let animation_frame = &spritesheet::BEE_FLYING_FRAMES[frame_num];
@@ -148,7 +149,7 @@ fn draw(bee: &Bee, pos: &Position, #[resource] clock: &GameClock, #[resource] se
     draw_mesh(&Mesh {
         vertices,
         indices,
-        texture: Some(bee.texture),
+        texture: Some(*texture),
     });
     for (fr, to) in [(0, 1), (1, 2), (2, 3), (3, 0)] {
         draw_line(

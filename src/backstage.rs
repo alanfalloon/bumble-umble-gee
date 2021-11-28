@@ -27,6 +27,11 @@ impl StageManager {
         // Next inputs.
         resources.insert(Inputs { mouse_click: None });
         builder.add_system(inputs_system());
+        // Now the costumes
+        resources.insert(Texture2D::from_file_with_format(
+            crate::spritesheet::SPRITESHEET_PNG_BYTES,
+            Some(ImageFormat::Png),
+        ));
         // In Z-order so drawing happens correctly
         crate::meadow::roll_call(&mut world, &mut builder, &mut resources);
         crate::bee::roll_call(&mut world, &mut builder, &mut resources);

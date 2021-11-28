@@ -6,11 +6,19 @@ use legion::{world::SubWorld, Entity, EntityStore as _};
 use macroquad::rand::gen_range;
 use static_aabb2d_index::{StaticAABB2DIndex, StaticAABB2DIndexBuilder};
 
-use crate::prelude::*;
+use crate::{prelude::*, spritesheet};
+
+/// This is the bees sprite rect translated so the bee position is at the
+/// origin.
+const FLOWER_SPRITE: Rect = Rect {
+    x: -(spritesheet::FLOWER_FRAME_SIZE.x as f32 * 0.5),
+    y: -(spritesheet::FLOWER_FRAME_SIZE.y as f32 * 0.5),
+    w: spritesheet::FLOWER_FRAME_SIZE.x as f32,
+    h: spritesheet::FLOWER_FRAME_SIZE.y as f32,
+};
 
 /// The meadow
 #[derive(Debug)]
-
 pub struct Meadow {
     pub size: Vec2,
     pub flower_index: StaticAABB2DIndex<f32>,
@@ -109,7 +117,7 @@ fn draw_flower(
     world: &mut SubWorld,
     #[resource] camera: &mut crate::camera::Camera,
     #[resource] meadow: &Meadow,
-    #[resource] settings: &Settings,
+    #[resource] texture: &Texture2D,
 ) {
     for flower_entry in meadow.flower_index_within(camera.rect).map(|index| {
         world
@@ -122,17 +130,64 @@ fn draw_flower(
         let flower = flower_entry
             .get_component::<Flower>()
             .expect("Flower missing flower data");
-        draw_circle(pos.x, pos.y, flower.radius, flower.color);
-        draw_circle(
-            pos.x,
-            pos.y,
-            flower.radius * settings.flower_core_size / 1000.,
-            if flower.collected {
-                settings.flower_collected_color
-            } else {
-                settings.flower_uncollected_color
-            },
-        );
+        let points = Quad::from_rect(&FLOWER_SPRITE)
+            .scale_to_origin(flower.radius / 128.)
+            .translate(pos);
+        // Vertices and triangles:
+        //  0 - 1
+        //  | \ |
+        //  3 - 2
+        {
+            let indices = vec![0, 1, 2, 0, 2, 3];
+            let texture_uv = Quad::from_rect(&spritesheet::FLOWER_FRAMES[0].uv);
+            let vertices: Vec<_> = {
+                use macroquad::models::Vertex;
+                (0..4)
+                    .into_iter()
+                    .map(|n| Vertex {
+                        position: points[n].extend(0.),
+                        uv: texture_uv[n],
+                        color: flower.color,
+                    })
+                    .collect()
+            };
+            draw_mesh(&Mesh {
+                vertices,
+                indices,
+                texture: Some(*texture),
+            });
+            for (fr, to) in [(0, 1), (1, 2), (2, 3), (3, 0)] {
+                draw_line(
+                    points[fr].x,
+                    points[fr].y,
+                    points[to].x,
+                    points[to].y,
+                    0.5,
+                    YELLOW,
+                );
+            }
+            draw_circle_lines(pos.x, pos.y, flower.radius, 0.5, RED);
+        }
+        if !flower.collected {
+            let indices = vec![0, 1, 2, 0, 2, 3];
+            let texture_uv = Quad::from_rect(&spritesheet::FLOWER_FRAMES[1].uv);
+            let vertices: Vec<_> = {
+                use macroquad::models::Vertex;
+                (0..4)
+                    .into_iter()
+                    .map(|n| Vertex {
+                        position: points[n].extend(0.),
+                        uv: texture_uv[n],
+                        color: WHITE,
+                    })
+                    .collect()
+            };
+            draw_mesh(&Mesh {
+                vertices,
+                indices,
+                texture: Some(*texture),
+            });
+        }
     }
 }
 

@@ -19,9 +19,6 @@ pub struct Settings {
     pub bee_size: f32,
     pub max_zoom: f32,
     pub velocity_zoom: f32,
-    pub flower_core_size: f32,
-    pub flower_uncollected_color: Color,
-    pub flower_collected_color: Color,
 }
 impl Default for Settings {
     fn default() -> Self {
@@ -30,8 +27,8 @@ impl Default for Settings {
             restart: false,
             meadow_height: 100.0,
             meadow_width: 100.0,
-            num_flowers: 300,
-            flower_size: 25.0..40.0,
+            num_flowers: 725,
+            flower_size: 30.0..35.0,
             mass: 1.0,
             max_thrust: 100.0,
             wind_resistance: 70.0,
@@ -44,20 +41,7 @@ impl Default for Settings {
             animation_speed: 30.0,
             bee_size: 200.0,
             max_zoom: 400.0,
-            velocity_zoom: 150.0,
-            flower_core_size: 250.0,
-            flower_uncollected_color: Color {
-                r: 0.99,
-                g: 0.7637141,
-                b: 0.0,
-                a: 1.0,
-            },
-            flower_collected_color: Color {
-                r: 0.20180376,
-                g: 0.13939229,
-                b: 0.052016273,
-                a: 1.0,
-            },
+            velocity_zoom: 75.0,
         }
     }
 }
@@ -95,14 +79,9 @@ mod ui {
             self.wind_resistance.declare_ui("Wind resistance", ui);
             self.animation_speed.declare_ui("Animation speed", ui);
             self.bee_size.declare_ui("Bee size", ui);
-            self.flower_core_size.declare_ui("Flower centre", ui);
             self.max_zoom.declare_ui("Max zoom", ui);
             self.velocity_zoom.declare_ui("Velocity zoom", ui);
             self.meadow_color.declare_ui("Meadow color", ui);
-            self.flower_uncollected_color
-                .declare_ui("Uncollected color", ui);
-            self.flower_collected_color
-                .declare_ui("Collected color", ui);
         }
     }
 
