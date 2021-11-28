@@ -3,6 +3,13 @@ name = "bumble-umble-gee"
 version = "0.1.0"
 edition = "2018"
 publish = false
+license = "BSD-3-Clause-Clear"
+license-file = "LICENSE"
+authors = [
+    "Alan Falloon <alan.falloon@gmail.com>",
+    "Audrey Falloon <audrey.falloon@gmail.com>",
+    "Charlotte Falloon <charlotteforeverx@gmail.com>",
+]
 
 [features]
 console = ["egui-macroquad"]
