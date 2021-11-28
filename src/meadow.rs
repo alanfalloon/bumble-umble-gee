@@ -195,7 +195,7 @@ fn draw_flower(
 fn rand_flower_color() -> Color {
     let r = gen_range(0f32, 1.);
     let b = gen_range(0., 1.);
-    let g = gen_range(0., r.min(b));
+    let g = gen_range(0., r.max(b));
     // scale them all so that the max channel is 1.
     let [r, g, b]: [f32; 3] = (vec3(r, g, b) / r.max(b)).into();
     Color::new(r, g, b, 1.)
