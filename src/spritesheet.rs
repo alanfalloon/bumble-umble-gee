@@ -17,29 +17,29 @@ pub const BEE_FLYING_FRAME_SIZE: XY<u32> = XY {
 };
 pub const BEE_FLYING_FRAME_UV: XY<f32> = XY {
     x: 0.25f32,
-    y: 0.5565217f32,
+    y: 0.3575419f32,
 };
 pub const BEE_FLYING_SPRITE_Y_OFFSET: u32 = 0u32;
 pub const BEE_FLYING_FRAMES: [FrameRect; 4] = [
     FrameRect {
         pixel_offset: XY { x: 0u32, y: 0u32 },
         xy: Rect { x: 0f32, y: 0f32, w: 163f32, h: 256f32 },
-        uv: Rect { x: 0f32, y: 0f32, w: 0.25f32, h: 0.5565217f32 },
+        uv: Rect { x: 0f32, y: 0f32, w: 0.25f32, h: 0.3575419f32 },
     },
     FrameRect {
         pixel_offset: XY { x: 163u32, y: 0u32 },
         xy: Rect { x: 163f32, y: 0f32, w: 163f32, h: 256f32 },
-        uv: Rect { x: 0.25f32, y: 0f32, w: 0.25f32, h: 0.5565217f32 },
+        uv: Rect { x: 0.25f32, y: 0f32, w: 0.25f32, h: 0.3575419f32 },
     },
     FrameRect {
         pixel_offset: XY { x: 326u32, y: 0u32 },
         xy: Rect { x: 326f32, y: 0f32, w: 163f32, h: 256f32 },
-        uv: Rect { x: 0.5f32, y: 0f32, w: 0.25f32, h: 0.5565217f32 },
+        uv: Rect { x: 0.5f32, y: 0f32, w: 0.25f32, h: 0.3575419f32 },
     },
     FrameRect {
         pixel_offset: XY { x: 489u32, y: 0u32 },
         xy: Rect { x: 489f32, y: 0f32, w: 163f32, h: 256f32 },
-        uv: Rect { x: 0.75f32, y: 0f32, w: 0.25f32, h: 0.5565217f32 },
+        uv: Rect { x: 0.75f32, y: 0f32, w: 0.25f32, h: 0.3575419f32 },
     },
 ];
 
@@ -50,14 +50,37 @@ pub const BEE_WALKING_FRAME_SIZE: XY<u32> = XY {
 };
 pub const BEE_WALKING_FRAME_UV: XY<f32> = XY {
     x: 0.39263803f32,
-    y: 0.44347826f32,
+    y: 0.2849162f32,
 };
 pub const BEE_WALKING_SPRITE_Y_OFFSET: u32 = 256u32;
 pub const BEE_WALKING_FRAMES: [FrameRect; 1] = [
     FrameRect {
         pixel_offset: XY { x: 0u32, y: 256u32 },
         xy: Rect { x: 0f32, y: 256f32, w: 256f32, h: 204f32 },
-        uv: Rect { x: 0f32, y: 0.5565217f32, w: 0.39263803f32, h: 0.44347826f32 },
+        uv: Rect { x: 0f32, y: 0.3575419f32, w: 0.39263803f32, h: 0.2849162f32 },
+    },
+];
+
+
+pub const FLOWER_FRAME_SIZE: XY<u32> = XY {
+    x: 245u32,
+    y: 256u32,
+};
+pub const FLOWER_FRAME_UV: XY<f32> = XY {
+    x: 0.37576687f32,
+    y: 0.3575419f32,
+};
+pub const FLOWER_SPRITE_Y_OFFSET: u32 = 460u32;
+pub const FLOWER_FRAMES: [FrameRect; 2] = [
+    FrameRect {
+        pixel_offset: XY { x: 0u32, y: 460u32 },
+        xy: Rect { x: 0f32, y: 460f32, w: 245f32, h: 256f32 },
+        uv: Rect { x: 0f32, y: 0.6424581f32, w: 0.37576687f32, h: 0.3575419f32 },
+    },
+    FrameRect {
+        pixel_offset: XY { x: 245u32, y: 460u32 },
+        xy: Rect { x: 245f32, y: 460f32, w: 245f32, h: 256f32 },
+        uv: Rect { x: 0.37576687f32, y: 0.6424581f32, w: 0.37576687f32, h: 0.3575419f32 },
     },
 ];
 
