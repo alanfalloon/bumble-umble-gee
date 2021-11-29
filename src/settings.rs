@@ -27,7 +27,7 @@ impl Default for Settings {
             restart: false,
             meadow_height: 100.0,
             meadow_width: 100.0,
-            num_flowers: 725,
+            num_flowers: 100,
             flower_size: 30.0..35.0,
             mass: 1.0,
             max_thrust: 100.0,
