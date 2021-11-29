@@ -38,6 +38,14 @@ pub struct Bee {
     destination: Vec2,
     thrust: Vec2,
 }
+impl Bee {
+    pub fn transform_rect(&self, pos: Vec2, settings: &Settings, rect: &Rect) -> Quad {
+        Quad::from_rect(rect)
+            .scale_to_origin(settings.bee_size / 1000.)
+            .rotate_to(self.thrust.normalize())
+            .translate(pos)
+    }
+}
 
 pub fn roll_call(
     world: &mut legion::world::World,
@@ -108,10 +116,7 @@ fn found_flower(
     let bee = world.entry_ref(the_bee.entity).expect("Bee missing");
     let Position(bee_pos) = *bee.get_component::<Position>().expect("Bee missing pos");
     let bee = *bee.get_component::<Bee>().expect("Bee missing bee data");
-    let hitbox = Quad::from_rect(&BEE_HITBOX)
-        .scale_to_origin(settings.bee_size / 1000.)
-        .rotate_to(bee.thrust.normalize())
-        .translate(bee_pos);
+    let hitbox = bee.transform_rect(bee_pos, settings, &BEE_HITBOX);
     let bee_shape = hitbox.polyline();
     let identity = Isometry::identity();
     for index in meadow.flower_index_within(hitbox.bb()) {
@@ -144,18 +149,12 @@ fn draw(
         .rem(spritesheet::BEE_FLYING_FRAMES.len());
     let animation_frame = &spritesheet::BEE_FLYING_FRAMES[frame_num];
     let Position(pos) = *pos;
-    let points = Quad::from_rect(&BEE_SPRITE)
-        .scale_to_origin(settings.bee_size / 1000.)
-        .rotate_to(bee.thrust.normalize())
-        .translate(pos);
+    let points = bee.transform_rect(pos, settings, &BEE_SPRITE);
     points.draw_sprite(*texture, animation_frame.uv, WHITE);
     #[cfg(feature = "wireframes")]
     {
         points.draw_sides(0.5, YELLOW);
-        let hitbox = Quad::from_rect(&BEE_HITBOX)
-            .scale_to_origin(settings.bee_size / 1000.)
-            .rotate_to(bee.thrust.normalize())
-            .translate(pos);
+        let hitbox = bee.transform_rect(pos, settings, &BEE_HITBOX);
         hitbox.draw_sides(0.5, RED);
         draw_circle_lines(bee.destination.x, bee.destination.y, 2., 1., MAGENTA);
         draw_circle_lines(pos.x, pos.y, 1., 0.5, YELLOW);
