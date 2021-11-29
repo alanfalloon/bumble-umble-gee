@@ -146,6 +146,7 @@ impl Quad {
         });
     }
 
+    #[allow(unused)]
     pub fn draw_sides(&self, thickness: f32, color: Color) {
         for (from, to) in self.sides() {
             draw_line(from.x, from.y, to.x, to.y, thickness, color);
