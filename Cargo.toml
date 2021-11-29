@@ -36,7 +36,7 @@ image = { version = "0.23.14", default-features = false, features = ["png"] }
 
 [profile.release]
 # Symbols, for profiling
-debug = true
+# debug = true
 # Do not perform backtrace for panic on release builds.
 panic = 'abort'
 # Perform optimizations on all codegen units.
