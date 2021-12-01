@@ -19,14 +19,18 @@ pub struct Settings {
     pub bee_size: f32,
     pub max_zoom: f32,
     pub velocity_zoom: f32,
+
+    pub font_size: f32,
+    pub score_x_offset: f32,
+    pub score_y_offset: f32,
 }
 impl Default for Settings {
     fn default() -> Self {
         Settings {
             quit: false,
             restart: false,
-            meadow_height: 100.0,
-            meadow_width: 100.0,
+            meadow_height: 30.0,
+            meadow_width: 30.0,
             num_flowers: 100,
             flower_size: 30.0..35.0,
             mass: 1.0,
@@ -42,6 +46,9 @@ impl Default for Settings {
             bee_size: 200.0,
             max_zoom: 400.0,
             velocity_zoom: 75.0,
+            font_size: 100.0,
+            score_x_offset: 500.0,
+            score_y_offset: 500.0,
         }
     }
 }
@@ -74,6 +81,9 @@ mod ui {
             self.meadow_width.declare_ui("Meadow width", ui);
             self.num_flowers.declare_ui("Num flowers", ui);
             self.flower_size.declare_ui("Flower size", ui);
+            self.font_size.declare_ui("Score font size", ui);
+            self.score_x_offset.declare_ui("Score X offset", ui);
+            self.score_y_offset.declare_ui("Score Y offset", ui);
             self.mass.declare_ui("Mass", ui);
             self.max_thrust.declare_ui("Max thrust", ui);
             self.wind_resistance.declare_ui("Wind resistance", ui);

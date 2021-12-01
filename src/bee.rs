@@ -37,6 +37,7 @@ const BEE_HITBOX: Rect = Rect {
 pub struct Bee {
     destination: Vec2,
     thrust: Vec2,
+    score: u32,
 }
 impl Bee {
     pub fn transform_rect(&self, pos: Vec2, settings: &Settings, rect: &Rect) -> Quad {
@@ -58,6 +59,7 @@ pub fn roll_call(
             Bee {
                 destination: meadow.rand_pos(),
                 thrust: Vec2::default(),
+                score: 0,
             },
             Position::from(meadow.rand_pos()),
             Velocity::default(),
@@ -69,6 +71,7 @@ pub fn roll_call(
     systems.add_system(fly_system());
     systems.add_system(found_flower_system());
     systems.add_system(draw_system());
+    systems.add_system(draw_score_system());
 }
 
 #[system(for_each)]
@@ -104,7 +107,7 @@ fn fly(
 }
 
 #[system]
-#[read_component(Bee)]
+#[write_component(Bee)]
 #[write_component(Flower)]
 #[read_component(Position)]
 fn found_flower(
@@ -119,6 +122,7 @@ fn found_flower(
     let hitbox = bee.transform_rect(bee_pos, settings, &BEE_HITBOX);
     let bee_shape = hitbox.polyline();
     let identity = Isometry::identity();
+    let mut score_delta = 0u32;
     for index in meadow.flower_index_within(hitbox.bb()) {
         let mut flower_entry = world
             .entry_mut(meadow.flower_entities[index])
@@ -129,11 +133,22 @@ fn found_flower(
         let flower = flower_entry
             .get_component_mut::<Flower>()
             .expect("Flower missing flower data");
+        if flower.collected {
+            continue;
+        }
         let flower_shape = Ball::new(flower.radius);
         let flower_isometry = Isometry::translation(flower_pos.x, flower_pos.y);
         if intersection_test(&identity, &bee_shape, &flower_isometry, &flower_shape).unwrap() {
             flower.collected = true;
+            score_delta += 1;
         }
+    }
+    if score_delta > 0 {
+        let mut bee = world.entry_mut(the_bee.entity).expect("Bee missing");
+        let bee = bee
+            .get_component_mut::<Bee>()
+            .expect("Bee missing bee data");
+        bee.score += score_delta;
     }
 }
 
@@ -156,7 +171,36 @@ fn draw(
         points.draw_sides(0.5, YELLOW);
         let hitbox = bee.transform_rect(pos, settings, &BEE_HITBOX);
         hitbox.draw_sides(0.5, RED);
-        draw_circle_lines(bee.destination.x, bee.destination.y, 2., 1., MAGENTA);
         draw_circle_lines(pos.x, pos.y, 1., 0.5, YELLOW);
     }
+    draw_circle_lines(bee.destination.x, bee.destination.y, 2., 0.5, MAGENTA);
+}
+
+#[system(for_each)]
+fn draw_score(
+    bee: &Bee,
+    #[resource] settings: &Settings,
+    #[resource] camera: &crate::camera::Camera,
+) {
+    let Rect { x, y, w, h } = camera.rect;
+    let font = Font::default();
+    let font_size = (settings.font_size / 10.) as u16;
+    let font_scale = vec2(w, h).length() / settings.max_zoom;
+    let text = &format!("{}", bee.score);
+    let TextDimensions {
+        width, offset_y, ..
+    } = measure_text(text, Some(font), font_size, font_scale);
+    let pad = 2.0;
+    let settings_x = font_scale * (settings.score_x_offset - 500.);
+    let settings_y = font_scale * (settings.score_y_offset - 500.);
+    let x = x + w - width - pad + settings_x;
+    let y = y + offset_y + pad + settings_y;
+    let params = TextParams {
+        font,
+        font_size,
+        font_scale,
+        font_scale_aspect: 1.0,
+        color: WHITE,
+    };
+    draw_text_ex(text, x, y, params);
 }
