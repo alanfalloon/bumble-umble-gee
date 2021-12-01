@@ -46,7 +46,7 @@ impl Default for Settings {
             bee_size: 200.0,
             max_zoom: 400.0,
             velocity_zoom: 75.0,
-            font_size: 100.0,
+            font_size: 300.0,
             score_x_offset: 500.0,
             score_y_offset: 500.0,
         }
