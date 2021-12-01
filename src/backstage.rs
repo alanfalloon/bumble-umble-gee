@@ -65,7 +65,7 @@ fn tick(#[resource] clock: &mut GameClock) {
 
 #[system]
 fn inputs(#[resource] inputs: &mut Inputs, #[resource] camera: &Camera) {
-    inputs.mouse_click = if is_mouse_button_pressed(MouseButton::Left) {
+    inputs.mouse_click = if is_mouse_button_down(MouseButton::Left) {
         Some(camera.screen_to_world(mouse_position().into()))
     } else {
         None
