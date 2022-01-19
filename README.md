@@ -1,13 +1,14 @@
 # Bumble Umble Gee
 
+Play [Bumble Umble Gee on Itch.io](https://alanfalloon.itch.io/bumbleumblegee)!
+
+![screenshot of the game showing a top-down view of some flowers of various colors and sizes and a small bumblebee near the centre with a green background](cover.png "Screen shot")
+
 Our small family team made a game to compete in the [Game Off
-2021](https://itch.io/jam/game-off-2021). In this game you play a bumble-bee
-visiting flowers in a meadow.
+2021](https://itch.io/jam/game-off-2021/rate/1295409). In this game you play a
+bumble-bee visiting flowers in a meadow.
 
-## Getting Started
-
-This will be hosted at [itch.io](https://itch.io) eventually, but you can play
-it locally for now.
+## Building from Source
 
 Install the [rust tools](https://rustup.rs) then you can run the code with:
 
