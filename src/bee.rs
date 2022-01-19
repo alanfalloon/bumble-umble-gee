@@ -173,7 +173,7 @@ fn draw(
         hitbox.draw_sides(0.5, RED);
         draw_circle_lines(pos.x, pos.y, 1., 0.5, YELLOW);
     }
-    draw_circle_lines(bee.destination.x, bee.destination.y, 2., 0.5, MAGENTA);
+    // draw_circle_lines(bee.destination.x, bee.destination.y, 2., 0.5, MAGENTA);
 }
 
 #[system(for_each)]
